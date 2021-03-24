@@ -39,6 +39,7 @@
     </profiles>
 
     <build>
+        <finalName>chromabeam</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
