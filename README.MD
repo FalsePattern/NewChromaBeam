@@ -1,4 +1,4 @@
-#ChromaBeam Rewrite
+# ChromaBeam Rewrite
 - [x] Basic world renderer
 - [ ] Component System
   - [ ] Generic component primitives
