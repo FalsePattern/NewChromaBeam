@@ -1,18 +1,23 @@
 package moe.falsepattern.engine.window;
 
 import moe.falsepattern.engine.Constants;
+import org.lwjgl.opengl.GL;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11C.GL_BLEND;
+import static org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.GL_SRC_ALPHA;
+import static org.lwjgl.opengl.GL11C.glBlendFunc;
+import static org.lwjgl.opengl.GL11C.glEnable;
 
-public class Window {
+public class Window implements AutoCloseable{
     private static Window singleton;
     private final long address;
     private final List<WindowResizeCallback> resizeCallbacks = new ArrayList<>();
     private final WindowCloseCallback closeCallback;
-    private boolean destroyed = false;
     public Window(int width, int height, String title, WindowCloseCallback closeCallback) {
 
         if (singleton != null) {
@@ -33,27 +38,22 @@ public class Window {
         }
         glfwSetWindowSizeCallback(address, Window::windowSizeCallback);
         glfwSetWindowCloseCallback(address, Window::windowCloseCallback);
-        this.closeCallback = (closeCallback == null) ? (w) -> {} : closeCallback;
+        this.closeCallback = (closeCallback == null) ? () -> {} : closeCallback;
         singleton = this;
-    }
-
-    public boolean destroyed() {
-        return destroyed;
+        glfwMakeContextCurrent(address);
+        GL.createCapabilities();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     public void destroy() {
-        if (!destroyed) {
-            glfwDestroyWindow(address);
-            glfwTerminate();
-            destroyed = true;
-            singleton = null;
-        }
+        glfwDestroyWindow(address);
+        glfwTerminate();
+        singleton = null;
     }
 
     public void swap() {
-        if (!destroyed) {
-            glfwSwapBuffers(address);
-        }
+        glfwSwapBuffers(address);
     }
 
     public void show() {
@@ -62,6 +62,10 @@ public class Window {
 
     public void hide() {
         glfwHideWindow(address);
+    }
+
+    public void vSync(boolean enabled) {
+        glfwSwapInterval(enabled ? 1 : 0);
     }
 
     public void addResizeCallback(WindowResizeCallback callback) {
@@ -73,10 +77,15 @@ public class Window {
     }
 
     private static void windowCloseCallback(long address) {
-        singleton.closeCallback.accept(singleton);
+        singleton.closeCallback.accept();
     }
 
     private static void windowSizeCallback(long address, int width, int height) {
-        singleton.resizeCallbacks.forEach((consumer) -> consumer.accept(singleton, width, height));
+        singleton.resizeCallbacks.forEach((consumer) -> consumer.accept(width, height));
+    }
+
+    @Override
+    public void close() {
+        destroy();
     }
 }
