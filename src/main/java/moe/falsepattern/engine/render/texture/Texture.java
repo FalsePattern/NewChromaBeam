@@ -6,7 +6,11 @@ import static org.lwjgl.opengl.GL33C.*;
 
 import java.awt.image.BufferedImage;
 
-public class Texture implements TextureRegionI {
+/**
+ * The simplest wrapper object for OpenGL textures. This is a 1 to 1 size region that maps to the entire input texture.
+ * Used internally for abstracting away GL calls from the rest of the code.
+ */
+public class Texture implements TextureRegionI, AutoCloseable {
     private final int address;
     private final int w;
     private final int h;
@@ -54,8 +58,18 @@ public class Texture implements TextureRegionI {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
+    /**
+     * This needs to be called when the texture is no longer needed. This will remove the texture from the GPU.
+     * If used in a try-with construct, the AutoCloseable will automatically do this without manual intervention.
+     */
     public void destroy() {
         glDeleteTextures(address);
+    }
+
+
+    @Override
+    public void close() {
+        destroy();
     }
 
     @Override

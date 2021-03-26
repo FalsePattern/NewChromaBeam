@@ -10,6 +10,9 @@ import static org.lwjgl.opengl.GL33C.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Allocates, destroys, and draws the chunks.
+ */
 public class ChunkRenderer implements AutoCloseable {
     private static final String defaultVertexShaderPath = "/moe/falsepattern/chromabeam/shaders/tile.vert";
     private static final String defaultFragmentShaderPath = "/moe/falsepattern/chromabeam/shaders/tile.frag";

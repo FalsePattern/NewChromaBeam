@@ -13,7 +13,13 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
+/**
+ * A large texture containing multiple independent smaller textures. Used for improving render performance by A LOT.
+ * By default, the game uses 2 atlases: a World atlas with components and related graphics, and a GUI atlas for text,
+ * buttons, and other interface related stuff.
+ */
 public class TextureAtlas extends Texture {
+
     private final HashMap<String, List<TextureRegion>> textures;
     public TextureAtlas(List<TextureTile> tiles) {
         super(atlasify(tiles), true);
@@ -28,11 +34,18 @@ public class TextureAtlas extends Texture {
         }
     }
 
+    /**
+     * Retrieves a texture with a given name, and at specific frame, if it's animated.
+     * @param name The name of the texture that needs to be retrieved
+     * @param frame The frame of the animation inside the texture to retrieve. If it's not animated, this should be 0.
+     * @return The requested texture frame, or null, if it doesn't exist.
+     */
     public TextureRegion getTexture(String name, int frame) {
         var frames = textures.getOrDefault(name, null);
         return frames != null && frames.size() >= frame ? frames.get(frame) : null;
     }
 
+    //Helper function for putting packed tiles into a texture atlas image.
     private static BufferedImage atlasify(List<TextureTile> tiles) {
         tiles.sort(Comparator.reverseOrder());
         var finalSize = pack(tiles);
@@ -47,6 +60,7 @@ public class TextureAtlas extends Texture {
         return result;
     }
 
+    //I'm not proud of this one, but it works, so whatever.
     private static Rectangle pack(List<TextureTile> tiles) {
         boolean notFound = true;
         boolean widthDouble = true;

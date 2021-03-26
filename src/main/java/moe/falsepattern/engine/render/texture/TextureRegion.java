@@ -1,5 +1,8 @@
 package moe.falsepattern.engine.render.texture;
 
+/**
+ * Canonical implementation of TextureRegionI.
+ */
 public class TextureRegion implements TextureRegionI {
     private final Texture texture;
     private final int x;

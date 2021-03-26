@@ -8,6 +8,21 @@ import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL45C.*;
+
+/**
+ * The basic building block of the new render engine. Renders a 128x128 square grid of components (16384) with a single
+ * draw call. This will be changed later once the game is actually implemented, so that the used can freely choose the
+ * desired scale based on their circuits/GPU/CPU. If components have static graphics, haven't updated their texture,
+ * or new components haven't been added since the previous draw call, then the renderer can avoid the costly re-send
+ * operation to the GPU.
+ *
+ * The smaller the chunk, the more draw calls are needed to draw large circuits, but it's changed less per tick because
+ * of the lower amount of potential changed components per tick.
+ * The larger the chunk, the more wasted data is stored on the GPU (empty components are just zero-sized rectangles).
+ *
+ * Also, components with animated textures need to re-send the entire chunk data to the gpu if the texture changes.
+ * (i now know why modded minecraft was so laggy on older versions)
+ */
 public class Chunk {
     public static final int FLOATS_PER_VERTEX = 4;
     public static final int CHUNK_SIDE_LENGTH = 128;

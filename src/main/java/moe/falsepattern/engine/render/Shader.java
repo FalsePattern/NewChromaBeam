@@ -4,6 +4,9 @@ import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL33C.*;
 
+/**
+ * Basic wrapper class for GLSL shaders.
+ */
 public class Shader implements AutoCloseable{
     private final int program;
     private final int[] uniforms;

@@ -4,6 +4,12 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 
+/**
+ * Used by TextureAtlas for sorting incoming textures into the atlas image. Contains a texture, it's canonical name,
+ * it's frame id (used for animated textures), and it's position+dimensions, the last of which will be modified by
+ * the TextureAtlas during sorting to reflect it's final position in the atlas. This should only be used for passing
+ * textures into the TextureAtlas' constructor.
+ */
 public class TextureTile implements Comparable<TextureTile> {
 
     final BufferedImage texture;
