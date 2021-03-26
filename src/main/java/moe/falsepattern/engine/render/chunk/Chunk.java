@@ -7,7 +7,7 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-import static org.lwjgl.opengl.GL45C.*;
+import static org.lwjgl.opengl.GL33C.*;
 
 /**
  * The basic building block of the new render engine. Renders a 128x128 square grid of components (16384) with a single

@@ -3,7 +3,6 @@ package moe.falsepattern.engine.render.chunk;
 import moe.falsepattern.engine.render.Camera;
 import moe.falsepattern.engine.render.Shader;
 import moe.falsepattern.util.ResourceUtil;
-import org.lwjgl.opengl.GL11C;
 
 import static org.lwjgl.opengl.GL33C.*;
 
@@ -71,7 +70,7 @@ public class ChunkRenderer implements AutoCloseable {
     }
 
     public void clear() {
-        glClear(GL11C.GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     public void setClearColor(float r, float g, float b) {
