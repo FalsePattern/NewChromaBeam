@@ -1,11 +1,7 @@
 package moe.falsepattern.engine.render.texture;
 
-import org.joml.Vector2i;
-
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class TextureTile implements Comparable<TextureTile>{
@@ -33,8 +29,7 @@ public class TextureTile implements Comparable<TextureTile>{
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof TextureTile) {
-            var tex = (TextureTile) obj;
+        if (obj instanceof TextureTile tex) {
             return Objects.equals(texture, tex.texture) && Objects.equals(textureName, tex.textureName)
                     && Objects.equals(textureFrame, tex.textureFrame) && Objects.equals(textureGeometry, tex.textureGeometry);
         } else {

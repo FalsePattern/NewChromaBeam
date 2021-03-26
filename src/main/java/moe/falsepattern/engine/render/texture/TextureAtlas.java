@@ -1,26 +1,20 @@
 package moe.falsepattern.engine.render.texture;
 
 import moe.falsepattern.engine.Constants;
-import moe.falsepattern.util.FPMath;
-import org.joml.Math;
-import org.joml.Vector2i;
 
 import java.awt.AlphaComposite;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
 public class TextureAtlas implements TextureI {
-    private Texture texture;
+    private final Texture texture;
     private final HashMap<String, List<TextureRegion>> textures;
     public TextureAtlas(List<TextureTile> tiles) {
         textures = new HashMap<>();

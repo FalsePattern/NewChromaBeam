@@ -22,10 +22,11 @@ public class Chunk {
     public static final int FLOATS_PER_CHUNK = QUADS_PER_CHUNK * FLOATS_PER_QUAD;
     public static final int VERTICES_PER_CHUNK = QUADS_PER_CHUNK * VERTICES_PER_QUAD;
 
+    public final Vector2i position = new Vector2i();
+
     private final int vao;
     private final int vbo;
     private final FloatBuffer buffer;
-    public Vector2i position = new Vector2i();
     private boolean changed = false;
 
 

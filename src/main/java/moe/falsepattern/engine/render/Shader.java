@@ -1,8 +1,6 @@
 package moe.falsepattern.engine.render;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.lwjgl.opengl.GL33C.*;
 
