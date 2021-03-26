@@ -13,11 +13,27 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 
-public class TextureAtlas implements TextureI {
-    private final Texture texture;
+public class TextureAtlas extends Texture {
     private final HashMap<String, List<TextureRegion>> textures;
     public TextureAtlas(List<TextureTile> tiles) {
+        super(atlasify(tiles), true);
         textures = new HashMap<>();
+        for (var tile: tiles) {
+            var frameList = textures.computeIfAbsent(tile.textureName, (ignored) -> new ArrayList<>());
+            var geom = tile.textureGeometry;
+            while (frameList.size() <= tile.textureFrame) {
+                frameList.add(null);
+            }
+            frameList.set(tile.textureFrame, new TextureRegion(this, geom.x, geom.y, geom.width, geom.height));
+        }
+    }
+
+    public TextureRegion getTexture(String name, int frame) {
+        var frames = textures.getOrDefault(name, null);
+        return frames != null && frames.size() >= frame ? frames.get(frame) : null;
+    }
+
+    private static BufferedImage atlasify(List<TextureTile> tiles) {
         tiles.sort(Comparator.reverseOrder());
         var finalSize = pack(tiles);
         var result = new BufferedImage(finalSize.width, finalSize.height, TYPE_INT_ARGB);
@@ -28,23 +44,10 @@ public class TextureAtlas implements TextureI {
         for (var tile : tiles) {
             gfx.drawImage(tile.texture, tile.textureGeometry.x, tile.textureGeometry.y, null);
         }
-        texture = new Texture(result, true);
-        for (var tile: tiles) {
-            var frameList = textures.computeIfAbsent(tile.textureName, (ignored) -> new ArrayList<>());
-            var geom = tile.textureGeometry;
-            while (frameList.size() <= tile.textureFrame) {
-                frameList.add(null);
-            }
-            frameList.set(tile.textureFrame, new TextureRegion(texture, geom.x, geom.y, geom.width, geom.height));
-        }
+        return result;
     }
 
-    public TextureRegion getTexture(String name, int frame) {
-        var frames = textures.getOrDefault(name, null);
-        return frames != null && frames.size() >= frame ? frames.get(frame) : null;
-    }
-
-    private Rectangle pack(List<TextureTile> tiles) {
+    private static Rectangle pack(List<TextureTile> tiles) {
         boolean notFound = true;
         boolean widthDouble = true;
         int gap = Constants.TEXTURE_GAP;
@@ -74,59 +77,5 @@ public class TextureAtlas implements TextureI {
             notFound = partitions.size() == 0;
         }
         return new Rectangle(0, 0, width, height);
-    }
-
-    @Override
-    public float u0() {
-        return 0;
-    }
-
-    @Override
-    public float v0() {
-        return 0;
-    }
-
-    @Override
-    public float u1() {
-        return 1;
-    }
-
-    @Override
-    public float v1() {
-        return 1;
-    }
-
-    @Override
-    public int x() {
-        return 0;
-    }
-
-    @Override
-    public int y() {
-        return 0;
-    }
-
-    @Override
-    public int width() {
-        return texture.width();
-    }
-
-    @Override
-    public int height() {
-        return texture.height();
-    }
-
-    public void destroy() {
-        texture.destroy();
-    }
-
-    @Override
-    public void bind() {
-        texture.bind();
-    }
-
-    @Override
-    public void unbind() {
-        texture.unbind();
     }
 }

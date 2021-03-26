@@ -6,7 +6,7 @@ import static org.lwjgl.opengl.GL33C.*;
 
 import java.awt.image.BufferedImage;
 
-public class Texture implements TextureRegionI{
+public class Texture implements TextureRegionI {
     private final int address;
     private final int w;
     private final int h;

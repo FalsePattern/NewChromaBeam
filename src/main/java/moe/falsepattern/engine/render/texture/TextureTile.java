@@ -4,7 +4,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Objects;
 
-public class TextureTile implements Comparable<TextureTile>{
+public class TextureTile implements Comparable<TextureTile> {
 
     final BufferedImage texture;
     final String textureName;
