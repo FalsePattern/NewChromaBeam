@@ -10,9 +10,10 @@ import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BeamTest {
+public class BeamTest {
     @Test
     public void testBeamInteraction() {
+        System.out.println("Testing basic beam collision detection");
         var world = new World2D(null);
         var prod1 = new BeamProducer(Direction.UP, BeamColor.RED);
         var prod2 = new BeamProducer(Direction.RIGHT, BeamColor.GREEN);
@@ -31,10 +32,10 @@ class BeamTest {
         world.set(0, 100, cons3);
         world.set(-100, 0, cons4);
         world.tick();
-        assertTrue(cons1.match);
-        assertTrue(cons2.match);
-        assertTrue(cons3.match);
-        assertTrue(cons4.match);
+        assertTrue(cons1.match, "Collision check 1 failed");
+        assertTrue(cons2.match, "Collision check 2 failed");
+        assertTrue(cons3.match, "Collision check 3 failed");
+        assertTrue(cons4.match, "Collision check 4 failed");
     }
 
     private static class BeamConsumer implements ComponentI{
