@@ -1,10 +1,11 @@
 # ChromaBeam Rewrite
 - [x] Basic world renderer
-- [ ] Component System
-  - [ ] Generic component primitives
-  - [ ] Infinite-sized 2D container
-  - [ ] Update scheduler and dispatcher
+- [x] Component System
+  - [x] Generic component primitives
+  - [x] Infinite-sized 2D container
 - [ ] Laser Simulation
+  - [ ] Beam resolver and component detection
+  - [ ] Update scheduler and dispatcher
   - [ ] Basic rectangle-based renderer
   - [ ] (Later) line-based renderer with deferred shaders for glow effect.
 - [ ] Basic input system
