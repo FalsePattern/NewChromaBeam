@@ -5,10 +5,10 @@ import java.awt.image.BufferedImage;
 import java.util.Objects;
 
 /**
- * Used by TextureAtlas for sorting incoming textures into the atlas image. Contains a texture, it's canonical name,
- * it's frame id (used for animated textures), and it's position+dimensions, the last of which will be modified by
- * the TextureAtlas during sorting to reflect it's final position in the atlas. This should only be used for passing
- * textures into the TextureAtlas' constructor.
+ * Used by {@link TextureAtlas} for sorting incoming textures into the atlas image. Contains a texture as a
+ * {@link BufferedImage}, it's canonical name, it's frame id (used for animated textures), and it's position+dimensions,
+ * the last of which will be modified by the {@link TextureAtlas} during sorting to reflect it's final position in the
+ * atlas. This should only be used for passing textures into the {@link TextureAtlas}' constructor.
  */
 public class TextureTile implements Comparable<TextureTile> {
 
@@ -35,7 +35,9 @@ public class TextureTile implements Comparable<TextureTile> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof TextureTile tex) {
+        if (obj instanceof TextureTile) {
+            @SuppressWarnings("PatternVariableCanBeUsed") //Manifold cannot compile if we use this feature :cry:
+            var tex = (TextureTile) obj;
             return Objects.equals(texture, tex.texture) && Objects.equals(textureName, tex.textureName)
                     && Objects.equals(textureFrame, tex.textureFrame) && Objects.equals(textureGeometry, tex.textureGeometry);
         } else {

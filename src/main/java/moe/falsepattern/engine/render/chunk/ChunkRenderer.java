@@ -1,18 +1,21 @@
 package moe.falsepattern.engine.render.chunk;
 
+import moe.falsepattern.chromabeam.world.WorldChunk;
 import moe.falsepattern.engine.render.Camera;
 import moe.falsepattern.engine.render.Shader;
+import moe.falsepattern.util.Destroyable;
 import moe.falsepattern.util.ResourceUtil;
 
 import static org.lwjgl.opengl.GL33C.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Allocates, destroys, and draws the chunks.
  */
-public class ChunkRenderer implements AutoCloseable {
+public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
     private static final String defaultVertexShaderPath = "/moe/falsepattern/chromabeam/shaders/tile.vert";
     private static final String defaultFragmentShaderPath = "/moe/falsepattern/chromabeam/shaders/tile.frag";
     private final Shader shader;
@@ -20,7 +23,7 @@ public class ChunkRenderer implements AutoCloseable {
     private final int zoomUniform;
     private final int aspectUniform;
 
-    private final List<Chunk> chunks = new ArrayList<>();
+    private final List<RenderChunk> renderChunks = new ArrayList<>();
 
     public ChunkRenderer() {
         this(ResourceUtil.readStringFromResource(defaultVertexShaderPath),
@@ -39,33 +42,34 @@ public class ChunkRenderer implements AutoCloseable {
         shader.bind();
         glUniform1f(zoomUniform, camera.getRenderZoom());
         glUniform2f(aspectUniform, camera.aspect.x, camera.aspect.y);
-        for (Chunk chunk : chunks) {
+        for (RenderChunk renderChunk : renderChunks) {
             glUniform2f(chunkOffsetUniform,
-                    camera.pos.x + chunk.position.x * Chunk.CHUNK_SIDE_LENGTH,
-                    camera.pos.y + chunk.position.y * Chunk.CHUNK_SIDE_LENGTH);
-            chunk.draw();
+                    camera.pos.x + renderChunk.position.x * WorldChunk.CHUNK_SIDE_LENGTH,
+                    camera.pos.y + renderChunk.position.y * WorldChunk.CHUNK_SIDE_LENGTH);
+            renderChunk.draw();
         }
         shader.unbind();
     }
 
-    public Chunk allocateChunk() {
-        var chunk = new Chunk();
-        chunks.add(chunk);
+    public RenderChunk allocateChunk() {
+        var chunk = new RenderChunk(this);
+        renderChunks.add(chunk);
         return chunk;
     }
 
-    public void removeChunk(Chunk chunk) {
-        if (chunks.contains(chunk)) {
-            chunks.remove(chunk);
-            chunk.destroy();
+    public void removeChunk(RenderChunk renderChunk) {
+        if (renderChunks.contains(renderChunk)) {
+            renderChunks.remove(renderChunk);
+            renderChunk.destroyInternal();
         }
     }
 
+    @Override
     public void destroy() {
-        for (var chunk: chunks) {
-            chunk.destroy();
+        for (var chunk: renderChunks) {
+            chunk.destroyInternal();
         }
-        chunks.clear();
+        renderChunks.clear();
         shader.destroy();
     }
 
@@ -77,9 +81,8 @@ public class ChunkRenderer implements AutoCloseable {
         glClearColor(r, g, b, 1f);
     }
 
-
     @Override
-    public void close() {
-        destroy();
+    public RenderChunk get() {
+        return allocateChunk();
     }
 }

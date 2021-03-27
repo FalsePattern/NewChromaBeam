@@ -1,5 +1,6 @@
 package moe.falsepattern.engine.render.texture;
 
+import moe.falsepattern.util.Destroyable;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL33C.*;
@@ -10,7 +11,7 @@ import java.awt.image.BufferedImage;
  * The simplest wrapper object for OpenGL textures. This is a 1 to 1 size region that maps to the entire input texture.
  * Used internally for abstracting away GL calls from the rest of the code.
  */
-public class Texture implements TextureRegionI, AutoCloseable {
+public class Texture implements TextureRegionI, Destroyable {
     private final int address;
     private final int w;
     private final int h;
@@ -62,14 +63,9 @@ public class Texture implements TextureRegionI, AutoCloseable {
      * This needs to be called when the texture is no longer needed. This will remove the texture from the GPU.
      * If used in a try-with construct, the AutoCloseable will automatically do this without manual intervention.
      */
+    @Override
     public void destroy() {
         glDeleteTextures(address);
-    }
-
-
-    @Override
-    public void close() {
-        destroy();
     }
 
     @Override

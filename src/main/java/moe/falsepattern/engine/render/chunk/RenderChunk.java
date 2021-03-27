@@ -1,12 +1,15 @@
 package moe.falsepattern.engine.render.chunk;
 
 import moe.falsepattern.engine.render.texture.TextureRegionI;
+import moe.falsepattern.util.Destroyable;
 import org.joml.Vector2i;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
+import static moe.falsepattern.chromabeam.world.WorldChunk.CHUNK_SIDE_LENGTH;
+import static moe.falsepattern.chromabeam.world.WorldChunk.COMPONENTS_PER_CHUNK;
 import static org.lwjgl.opengl.GL33C.*;
 
 /**
@@ -23,19 +26,17 @@ import static org.lwjgl.opengl.GL33C.*;
  * Also, components with animated textures need to re-send the entire chunk data to the gpu if the texture changes.
  * (i now know why modded minecraft was so laggy on older versions)
  */
-public class Chunk {
+public class RenderChunk implements Destroyable {
     public static final int FLOATS_PER_VERTEX = 4;
-    public static final int CHUNK_SIDE_LENGTH = 128;
 
     public static final int VERTICES_PER_TRIANGLE = 3;
     public static final int TRIANGLES_PER_QUAD = 2;
     public static final int VERTICES_PER_QUAD = TRIANGLES_PER_QUAD * VERTICES_PER_TRIANGLE;
 
     public static final int FLOATS_PER_QUAD = FLOATS_PER_VERTEX * VERTICES_PER_QUAD;
-    public static final int QUADS_PER_CHUNK = CHUNK_SIDE_LENGTH * CHUNK_SIDE_LENGTH;
 
-    public static final int FLOATS_PER_CHUNK = QUADS_PER_CHUNK * FLOATS_PER_QUAD;
-    public static final int VERTICES_PER_CHUNK = QUADS_PER_CHUNK * VERTICES_PER_QUAD;
+    public static final int FLOATS_PER_CHUNK = COMPONENTS_PER_CHUNK * FLOATS_PER_QUAD;
+    public static final int VERTICES_PER_CHUNK = COMPONENTS_PER_CHUNK * VERTICES_PER_QUAD;
 
     public final Vector2i position = new Vector2i();
 
@@ -68,7 +69,10 @@ public class Chunk {
         buffer.put((y * CHUNK_SIDE_LENGTH + x) * FLOATS_PER_QUAD, BUF);
     }
 
-    Chunk() {
+    private final ChunkRenderer parent;
+
+    RenderChunk(ChunkRenderer parent) {
+        this.parent = parent;
         vao = glGenVertexArrays();
         glBindVertexArray(vao);
         vbo = glGenBuffers();
@@ -96,7 +100,12 @@ public class Chunk {
         glBindVertexArray(0);
     }
 
-    void destroy() {
+    @Override
+    public void destroy() {
+        parent.removeChunk(this);
+    }
+
+    void destroyInternal() {
         glBindVertexArray(0);
         glDeleteBuffers(vbo);
         glDeleteVertexArrays(vao);

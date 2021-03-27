@@ -1,5 +1,7 @@
 package moe.falsepattern.engine.render;
 
+import moe.falsepattern.util.Destroyable;
+
 import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL33C.*;
@@ -7,7 +9,7 @@ import static org.lwjgl.opengl.GL33C.*;
 /**
  * Basic wrapper class for GLSL shaders.
  */
-public class Shader implements AutoCloseable{
+public class Shader implements Destroyable {
     private final int program;
     private final int[] uniforms;
     public Shader(String vertexSource, String fragmentSource, String... uniforms) {
@@ -56,11 +58,8 @@ public class Shader implements AutoCloseable{
         glUseProgram(0);
     }
 
+    @Override
     public void destroy() {
         glDeleteProgram(program);
-    }
-    @Override
-    public void close() {
-        destroy();
     }
 }
