@@ -119,6 +119,12 @@
         <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version><scope>provided</scope></dependency>
         <dependency><groupId>systems.manifold</groupId><artifactId>manifold-rt</artifactId><version>${manifold.version}</version></dependency>
         <dependency><groupId>systems.manifold</groupId><artifactId>manifold-ext-rt</artifactId><version>${manifold.version}</version></dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.7.1</version>
+            <scope>test</scope>
+        </dependency>
         <!--LWJGL stuff-->
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl</artifactId></dependency>
         <dependency><groupId>org.lwjgl</groupId><artifactId>lwjgl-assimp</artifactId></dependency>

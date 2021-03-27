@@ -38,7 +38,8 @@ public class RenderChunk implements Destroyable {
     public static final int FLOATS_PER_CHUNK = COMPONENTS_PER_CHUNK * FLOATS_PER_QUAD;
     public static final int VERTICES_PER_CHUNK = COMPONENTS_PER_CHUNK * VERTICES_PER_QUAD;
 
-    public final Vector2i position = new Vector2i();
+    public int x = 0;
+    public int y = 0;
 
     private final int vao;
     private final int vbo;

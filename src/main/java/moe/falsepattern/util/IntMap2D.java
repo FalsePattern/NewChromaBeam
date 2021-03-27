@@ -11,15 +11,19 @@ import java.util.function.Supplier;
 public class IntMap2D<T> implements Iterable<T>{
     private final TreeMap<Integer, TreeMap<Integer, T>> map = new TreeMap<>();
     private int size = 0;
+    private int minX = 0;
+    private int maxX = 0;
+    private int minY = 0;
+    private int maxY = 0;
 
     public T get(Vector2i pos) {
         return get(pos.x(), pos.y());
     }
 
     public T get(int x, int y) {
-        var row = map.getOrDefault(y, null);
+        var row = map[y];
         if (row != null) {
-            return row.getOrDefault(x, null);
+            return row[x];
         }
         return null;
     }
@@ -38,6 +42,26 @@ public class IntMap2D<T> implements Iterable<T>{
         return ret;
     }
 
+    public boolean isEmptyAbove(int x, int y) {
+        return map.entrySet().stream().filter(entry -> entry.getKey() < y).anyMatch(entry -> entry.getValue().containsKey(x));
+    }
+
+    public boolean isEmptyBelow(int x, int y) {
+        return map.entrySet().stream().filter(entry -> entry.getKey() > y).anyMatch(entry -> entry.getValue().containsKey(x));
+    }
+
+    public boolean isEmptyLeft(int x, int y) {
+        var row = map[y];
+        return row == null || row.keySet().stream().noneMatch((key) -> key < x);
+    }
+
+    public boolean isEmptyRight(int x, int y) {
+        var row = map[y];
+        return row == null || row.keySet().stream().noneMatch((key) -> key > x);
+    }
+
+
+
     public void set(Vector2ic pos, T value) {
         set(pos.x(), pos.y(), value);
     }
@@ -47,6 +71,10 @@ public class IntMap2D<T> implements Iterable<T>{
         var row = map.computeIfAbsent(y, (ignored) -> new TreeMap<>());
         if (row.put(x, value) == null) {
             size++;
+            minX = Math.min(x, minX);
+            maxX = Math.max(x, maxX);
+            minY = Math.min(y, minY);
+            maxY = Math.max(y, maxY);
         }
     }
 
@@ -55,13 +83,38 @@ public class IntMap2D<T> implements Iterable<T>{
     }
 
     public void delete(int x, int y) {
-        var row = map.getOrDefault(y, null);
+        var row = map[y];
         if (row != null) {
             if (row.remove(x) != null) {
                 size--;
+                if (x == maxX) {
+                    maxX = map.values()
+                            .stream()
+                            .mapMultiToInt((line, replacer) ->
+                                    line.keySet().forEach(replacer::accept))
+                            .max()
+                            .orElse(0);
+                }
+                if (x == minX) {
+                    maxX = map.values()
+                            .stream()
+                            .mapMultiToInt((line, replacer) ->
+                                    line.keySet().forEach(replacer::accept))
+                            .min()
+                            .orElse(0);
+                }
             }
             if (row.isEmpty()) {
                 map.remove(y);
+                if (y == minY) {
+                    minY = map.keySet()
+                            .stream()
+                            .min(Integer::compareTo)
+                            .orElse(0);
+                }
+                if (y == maxY) {
+                    maxY = map.keySet().stream().max(Integer::compareTo).orElse(0);
+                }
             }
         }
     }

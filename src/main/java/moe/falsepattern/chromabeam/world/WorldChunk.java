@@ -15,10 +15,12 @@ import java.util.Stack;
  * The basic storage block of the ChromaBeam world. Chunks improve component access speeds by reducing the amount of
  * List accesses. Update order of a chunk is randomized, as components are updated independently anyways.
  */
-public class WorldChunk implements Destroyable {
+public class WorldChunk implements Destroyable, Tickable {
     public static final int CHUNK_SIDE_LENGTH = 128;
     public static final int COMPONENTS_PER_CHUNK = CHUNK_SIDE_LENGTH * CHUNK_SIDE_LENGTH;
 
+    private final int baseX;
+    private final int baseY;
     private final RenderChunk renderChunk;
     private final ComponentI[] components = new ComponentI[COMPONENTS_PER_CHUNK];
     private final List<ComponentI> updateQueue = new ArrayList<>();
@@ -28,14 +30,22 @@ public class WorldChunk implements Destroyable {
     //Cache objects to reduce GC pressure
     private final Stack<Vector2i> vectorCache = new Stack<>();
 
-    public WorldChunk(RenderChunk assignedRenderChunk) {
+    public WorldChunk(int cX, int cY, RenderChunk assignedRenderChunk) {
+        this.baseX = cX * CHUNK_SIDE_LENGTH;
+        this.baseY = cY * CHUNK_SIDE_LENGTH;
         this.renderChunk = assignedRenderChunk;
+        if (this.renderChunk != null) {
+            this.renderChunk.x = cX;
+            this.renderChunk.y = cY;
+        }
     }
 
-    private boolean graphicsUpdateQueued = false;
-    public void tick() {
+    public void tick(BeamResolver resolver) {
         for (var component: updateQueue) {
-            component.tick();
+            component.tick((dir, color) -> {
+                var pos = reverseComponentMap.get(component);
+                resolver.scheduleBeam(pos.x + baseX, pos.y + baseY, dir, color);
+            });
             if (component.graphicsChanged()) {
                 var vec = reverseComponentMap.get(component);
                 updateGraphics(vec.x, vec.y, component);
@@ -92,6 +102,7 @@ public class WorldChunk implements Destroyable {
     }
 
     private void updateGraphics(int x, int y, ComponentI component) {
+        if (renderChunk == null) return;
         if (component == null) {
             renderChunk.set(x, y, null);
         } else {

@@ -44,8 +44,8 @@ public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
         glUniform2f(aspectUniform, camera.aspect.x, camera.aspect.y);
         for (RenderChunk renderChunk : renderChunks) {
             glUniform2f(chunkOffsetUniform,
-                    camera.pos.x + renderChunk.position.x * WorldChunk.CHUNK_SIDE_LENGTH,
-                    camera.pos.y + renderChunk.position.y * WorldChunk.CHUNK_SIDE_LENGTH);
+                    camera.pos.x + renderChunk.x * WorldChunk.CHUNK_SIDE_LENGTH,
+                    camera.pos.y + renderChunk.y * WorldChunk.CHUNK_SIDE_LENGTH);
             renderChunk.draw();
         }
         shader.unbind();

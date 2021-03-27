@@ -5,6 +5,8 @@ import moe.falsepattern.chromabeam.beam.BeamColor;
 import moe.falsepattern.chromabeam.beam.Direction;
 import moe.falsepattern.engine.render.texture.TextureRegionI;
 
+import java.util.function.BiConsumer;
+
 /**
  * The basic interface for ChromaBeam's components. Note that components MUST be position-blind, as all computations
  * MUST be position-irrelevant by design. This means that you should NEVER have a way to retrieve information using
@@ -22,7 +24,7 @@ public interface ComponentI {
     /**
      * Executes 1 time unit of simulation in the component. Components MUST do graphics and output changes here.
      */
-    void tick();
+    void tick(BiConsumer<Direction, BeamColor> beamEmitter);
 
     /**
      * Creates an identical copy of the component, but with each internal value deep-copied to be fully independent

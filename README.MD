@@ -3,9 +3,10 @@
 - [x] Component System
   - [x] Generic component primitives
   - [x] Infinite-sized 2D container
-- [ ] Laser Simulation
-  - [ ] Beam resolver and component detection
-  - [ ] Update scheduler and dispatcher
+- [x] Laser Simulation
+  - [x] Beam resolver and component detection
+  - [x] Update scheduler and dispatcher
+- [ ] Laser rendering
   - [ ] Basic rectangle-based renderer
   - [ ] (Later) line-based renderer with deferred shaders for glow effect.
 - [ ] Basic input system
