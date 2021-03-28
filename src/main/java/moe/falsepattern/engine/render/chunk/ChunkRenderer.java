@@ -24,6 +24,7 @@ public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
     private final int aspectUniform;
 
     private final List<RenderChunk> renderChunks = new ArrayList<>();
+    private final List<RenderChunk> inactiveRenderChunks = new ArrayList<>();
 
     public ChunkRenderer() {
         this(ResourceUtil.readStringFromResource(defaultVertexShaderPath),
@@ -57,9 +58,22 @@ public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
         return chunk;
     }
 
+    public void activateChunk(RenderChunk renderChunk) {
+        if (inactiveRenderChunks.remove(renderChunk)) {
+            renderChunks.add(renderChunk);
+            renderChunk.active = true;
+        }
+    }
+
+    public void deactivateChunk(RenderChunk renderChunk) {
+        if (renderChunks.remove(renderChunk)) {
+            inactiveRenderChunks.add(renderChunk);
+            renderChunk.active = false;
+        }
+    }
+
     public void removeChunk(RenderChunk renderChunk) {
-        if (renderChunks.contains(renderChunk)) {
-            renderChunks.remove(renderChunk);
+        if (renderChunks.remove(renderChunk) || inactiveRenderChunks.remove(renderChunk)) {
             renderChunk.destroyInternal();
         }
     }
@@ -67,6 +81,9 @@ public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
     @Override
     public void destroy() {
         for (var chunk: renderChunks) {
+            chunk.destroyInternal();
+        }
+        for (var chunk: inactiveRenderChunks) {
             chunk.destroyInternal();
         }
         renderChunks.clear();

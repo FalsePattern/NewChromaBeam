@@ -13,23 +13,47 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class World2D implements Destroyable, BeamResolver{
+public class World2D implements Destroyable, BeamResolver {
     private final IntMap2D<WorldChunk> chunks = new IntMap2D<>();
+    private final List<WorldChunk> emptyChunkCache = new ArrayList<>();
     private final Supplier<RenderChunk> allocator;
     public World2D(Supplier<RenderChunk> renderChunkAllocator) {
         this.allocator = renderChunkAllocator;
     }
 
     public ComponentI set(int x, int y, ComponentI component) {
+        if (component == null) return remove(x, y);
         int cX = Math.floorDiv(x, WorldChunk.CHUNK_SIDE_LENGTH);
         int cY = Math.floorDiv(y, WorldChunk.CHUNK_SIDE_LENGTH);
-        var chunk = chunks.getOrCompute(cX, cY, () -> new WorldChunk(cX, cY, allocator == null ? null : allocator.get()));
+        var chunk = chunks.getOrCompute(cX, cY, () -> {
+            if (emptyChunkCache.size() == 0) {
+                return new WorldChunk(cX, cY, allocator == null ? null : allocator.get());
+            } else {
+                var c = emptyChunkCache.remove(emptyChunkCache.size() - 1);
+                c.activate();
+                c.setPos(cX, cY);
+                return c;
+            }
+        });
         return chunk.setComponent(Math.floorMod(x, WorldChunk.CHUNK_SIDE_LENGTH), Math.floorMod(y, WorldChunk.CHUNK_SIDE_LENGTH), component);
     }
 
     public ComponentI get(int x, int y) {
         var chunk = chunks.get(Math.floorDiv(x, WorldChunk.CHUNK_SIDE_LENGTH), Math.floorDiv(y, WorldChunk.CHUNK_SIDE_LENGTH));
         return chunk != null ? chunk.getComponent(Math.floorMod(x, WorldChunk.CHUNK_SIDE_LENGTH), Math.floorMod(y, WorldChunk.CHUNK_SIDE_LENGTH)) : null;
+    }
+
+    public ComponentI remove(int x, int y) {
+        int cX = Math.floorDiv(x, WorldChunk.CHUNK_SIDE_LENGTH);
+        int cY = Math.floorDiv(y, WorldChunk.CHUNK_SIDE_LENGTH);
+        var chunk = chunks.get(cX, cY);
+        var comp = chunk != null ? chunk.removeComponent(Math.floorMod(x, WorldChunk.CHUNK_SIDE_LENGTH), Math.floorMod(y, WorldChunk.CHUNK_SIDE_LENGTH)) : null;
+        if (chunk != null && chunk.empty()) {
+            chunks.delete(cX, cY);
+            emptyChunkCache.add(chunk);
+            chunk.deactivate();
+        }
+        return comp;
     }
 
     public void tick() {

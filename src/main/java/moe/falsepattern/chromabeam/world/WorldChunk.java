@@ -19,8 +19,8 @@ public class WorldChunk implements Destroyable, Tickable {
     public static final int CHUNK_SIDE_LENGTH = 128;
     public static final int COMPONENTS_PER_CHUNK = CHUNK_SIDE_LENGTH * CHUNK_SIDE_LENGTH;
 
-    private final int baseX;
-    private final int baseY;
+    private int baseX;
+    private int baseY;
     private final RenderChunk renderChunk;
     private final ComponentI[] components = new ComponentI[COMPONENTS_PER_CHUNK];
     private final List<ComponentI> updateQueue = new ArrayList<>();
@@ -30,10 +30,16 @@ public class WorldChunk implements Destroyable, Tickable {
     //Cache objects to reduce GC pressure
     private final Stack<Vector2i> vectorCache = new Stack<>();
 
+    private int size = 0;
+
     public WorldChunk(int cX, int cY, RenderChunk assignedRenderChunk) {
+        this.renderChunk = assignedRenderChunk;
+        setPos(cX, cY);
+    }
+
+    public void setPos(int cX, int cY) {
         this.baseX = cX * CHUNK_SIDE_LENGTH;
         this.baseY = cY * CHUNK_SIDE_LENGTH;
-        this.renderChunk = assignedRenderChunk;
         if (this.renderChunk != null) {
             this.renderChunk.x = cX;
             this.renderChunk.y = cY;
@@ -70,6 +76,7 @@ public class WorldChunk implements Destroyable, Tickable {
         } else {
             reverseComponentMap.put(component, vectorCache.empty() ? new Vector2i(x, y) : vectorCache.pop());
             updateQueue.add(component);
+            size++;
         }
         updateGraphics(x, y, component);
         return old;
@@ -98,6 +105,7 @@ public class WorldChunk implements Destroyable, Tickable {
         updateQueue.remove(comp);
         updateGraphics(x, y, null);
         vectorCache.push(reverseComponentMap.remove(comp));
+        size--;
         return comp;
     }
 
@@ -108,6 +116,22 @@ public class WorldChunk implements Destroyable, Tickable {
         } else {
             renderChunk.set(x, y, component.getTexture());
         }
+    }
+
+    public int size() {
+        return size;
+    }
+
+    public boolean empty() {
+        return size == 0;
+    }
+
+    void activate() {
+        renderChunk.activate();
+    }
+
+    void deactivate() {
+        renderChunk.deactivate();
     }
 
     @Override

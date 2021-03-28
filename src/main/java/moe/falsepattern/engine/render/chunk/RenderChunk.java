@@ -44,6 +44,7 @@ public class RenderChunk implements Destroyable {
     private final int vbo;
     private final FloatBuffer buffer;
     private boolean changed = false;
+    boolean active = true;
 
 
     private final float[] BUF = new float[FLOATS_PER_QUAD];
@@ -103,6 +104,14 @@ public class RenderChunk implements Destroyable {
     @Override
     public void destroy() {
         parent.removeChunk(this);
+    }
+
+    public void activate() {
+        parent.activateChunk(this);
+    }
+
+    public void deactivate() {
+        parent.deactivateChunk(this);
     }
 
     void destroyInternal() {
