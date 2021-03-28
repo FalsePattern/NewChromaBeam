@@ -2,7 +2,6 @@ package moe.falsepattern.engine.render.chunk;
 
 import moe.falsepattern.engine.render.texture.TextureRegionI;
 import moe.falsepattern.util.Destroyable;
-import org.joml.Vector2i;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
