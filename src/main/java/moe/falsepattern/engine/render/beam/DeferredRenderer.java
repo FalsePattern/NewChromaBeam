@@ -39,7 +39,7 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
         backBuffer.bind();
         Renderer.clear(0, 0, 0, 0);
         subRenderer.render();
-        backBuffer.unbind();
+
         shader.bind();
         buffer.bind();
         backBuffer.getTexture().bind();
@@ -47,13 +47,10 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
         GL33C.glUniform1i(horizontalblur, 1);
         GL33C.glDrawArrays(GL11C.GL_TRIANGLE_FAN, 0, 4);
         tempBuffer.unbind();
-        backBuffer.getTexture().unbind();
+
         tempBuffer.getTexture().bind();
         GL33C.glUniform1i(horizontalblur, 0);
         GL33C.glDrawArrays(GL11C.GL_TRIANGLE_FAN, 0, 4);
-        tempBuffer.getTexture().unbind();
-        buffer.unbind();
-        shader.unbind();
     }
 
     @Override

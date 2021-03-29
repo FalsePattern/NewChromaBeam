@@ -38,7 +38,6 @@ public abstract class WorldRenderer extends Renderer implements Destroyable {
         glUniform2f(aspectUniform, camera.aspect);
         glUniform1f(zoomUniform, camera.getRenderZoom());
         renderContent();
-        shader.unbind();
     }
 
     protected abstract void renderContent();

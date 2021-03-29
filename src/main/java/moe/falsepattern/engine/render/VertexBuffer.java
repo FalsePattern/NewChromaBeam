@@ -32,13 +32,10 @@ public class VertexBuffer implements Bindable, Destroyable {
         for (int i = 0; i < attribs; i++) {
             glVertexAttribPointer(i, attributes[i], GL_FLOAT, false, stride, offset);
             offset += attributes[i] * 4;
+            glEnableVertexAttribArray(i);
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        if (vaoStack.empty()) {
-            glBindVertexArray(0);
-        } else {
-            glBindVertexArray(vaoStack.peek());
-        }
+        glBindVertexArray(0);
         buffer = MemoryUtil.memCallocFloat(vertices * floatsPerVertex);
     }
 
@@ -47,33 +44,24 @@ public class VertexBuffer implements Bindable, Destroyable {
         return buffer;
     }
 
-    private static final Stack<Integer> vaoStack = new Stack<>();
-    @Override
-    public void bind() {
+    public void sync() {
         if (changed) {
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             glBufferSubData(GL_ARRAY_BUFFER, 0, buffer);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             changed = false;
         }
-        vaoStack.push(vao);
+    }
+
+    @Override
+    public void bind() {
+        sync();
         glBindVertexArray(vao);
-        for (int i = 0; i < attribs; i++) {
-            glEnableVertexAttribArray(i);
-        }
     }
 
     @Override
     public void unbind() {
-        vaoStack.pop();
-        for (int i = 0; i < attribs; i++) {
-            glDisableVertexAttribArray(i);
-        }
-        if (vaoStack.empty()) {
-            glBindVertexArray(0);
-        } else {
-            glBindVertexArray(vaoStack.peek());
-        }
+        glBindVertexArray(0);
     }
 
     @Override

@@ -1,8 +1,5 @@
 package moe.falsepattern.engine;
 
-import manifold.ext.rt.api.Self;
-import manifold.ext.rt.api.This;
-
 /**
  * A class for uniting bind/unbind calls for external resources.
  */

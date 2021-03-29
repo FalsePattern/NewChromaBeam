@@ -52,12 +52,12 @@ public class BeamRenderer extends WorldRenderer {
     protected void renderContent() {
         GL33C.glLineWidth(2);
         int beamsDrawn = 0;
+        vb.bind();
         while (beams > 0) {
             int inCurrentDraw = Math.min(beams, beamsPerDraw);
             vb.getBufferForWriting().put(0, growableBuffer, beamsDrawn * FLOATS_PER_BEAM, Math.min(beams, beamsPerDraw) * FLOATS_PER_BEAM);
-            vb.bind();
+            vb.sync();
             GL33C.glDrawArrays(GL11C.GL_LINES, 0, inCurrentDraw * VERTICES_PER_BEAM);
-            vb.unbind();
             beams -= inCurrentDraw;
             beamsDrawn += inCurrentDraw;
         }

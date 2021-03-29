@@ -58,20 +58,12 @@ public class Shader implements Destroyable, Bindable {
         return shader;
     }
 
-    private static final Stack<Integer> shaderStack = new Stack<>();
-
     public void bind() {
         glUseProgram(program);
-        shaderStack.push(program);
     }
 
     public void unbind() {
-        shaderStack.pop();
-        if (shaderStack.empty()) {
-            glUseProgram(0);
-        } else {
-            glUseProgram(shaderStack.peek());
-        }
+        glUseProgram(0);
     }
 
     @Override

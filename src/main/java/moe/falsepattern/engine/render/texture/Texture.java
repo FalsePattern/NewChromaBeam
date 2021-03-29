@@ -69,19 +69,12 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
         this.h = height;
     }
 
-    private static final Stack<Integer> textureStack = new Stack<>();
     public void bind() {
-        textureStack.push(address);
         glBindTexture(GL_TEXTURE_2D, address);
     }
 
     public void unbind() {
-        textureStack.pop();
-        if (textureStack.empty()) {
-            glBindTexture(GL_TEXTURE_2D, 0);
-        } else {
-            glBindTexture(GL_TEXTURE_2D, textureStack.peek());
-        }
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     @Override

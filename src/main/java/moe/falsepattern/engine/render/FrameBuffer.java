@@ -48,19 +48,12 @@ public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable 
         rebuild();
     }
 
-    private static final Stack<Integer> fbStack = new Stack<>();
     public void bind() {
-        fbStack.push(address);
         glBindFramebuffer(GL_FRAMEBUFFER, address);
     }
 
     public void unbind() {
-        fbStack.pop();
-        if (fbStack.empty()) {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        } else {
-            glBindFramebuffer(GL_FRAMEBUFFER, fbStack.peek());
-        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     public Texture getTexture() {
