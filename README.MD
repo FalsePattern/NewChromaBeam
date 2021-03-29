@@ -6,9 +6,9 @@
 - [x] Laser Simulation
   - [x] Beam resolver and component detection
   - [x] Update scheduler and dispatcher
-- [ ] Laser rendering
-  - [ ] Basic rectangle-based renderer
-  - [ ] (Later) line-based renderer with deferred shaders for glow effect.
+  - [ ] Analog lasers
+- [x] Laser rendering
+  - [x] line-based renderer with deferred shaders for glow effect.
 - [ ] Basic input system
   - [ ] Mouse&Keyboard interaction with world
 - [ ] (Temporary test) Hardcoded primitive components
