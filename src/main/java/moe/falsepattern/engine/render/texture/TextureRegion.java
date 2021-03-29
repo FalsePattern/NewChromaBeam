@@ -64,13 +64,4 @@ public class TextureRegion implements TextureRegionI {
         return h;
     }
 
-    @Override
-    public void bind() {
-        texture.bind();
-    }
-
-    @Override
-    public void unbind() {
-        texture.unbind();
-    }
 }

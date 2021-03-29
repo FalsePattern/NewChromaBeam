@@ -1,17 +1,19 @@
 package moe.falsepattern.engine.render.texture;
 
+import moe.falsepattern.engine.Bindable;
 import moe.falsepattern.util.Destroyable;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL33C.*;
 
 import java.awt.image.BufferedImage;
+import java.util.Stack;
 
 /**
  * The simplest wrapper object for OpenGL textures. This is a 1 to 1 size region that maps to the entire input texture.
  * Used internally for abstracting away GL calls from the rest of the code.
  */
-public class Texture implements TextureRegionI, Destroyable {
+public class Texture implements TextureRegionI, Destroyable, Bindable {
     private final int address;
     private final int w;
     private final int h;
@@ -32,37 +34,56 @@ public class Texture implements TextureRegionI, Destroyable {
                     }
                 }
             }
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
-            if (mipMap) {
-                glGenerateMipmap(GL_TEXTURE_2D);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            } else {
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            }
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
         } finally {
             MemoryUtil.memFree(buf);
         }
-        glBindTexture(GL_TEXTURE_2D, 0);
+        configureTexture(mipMap);
         this.w = image.getWidth();
         this.h = image.getHeight();
     }
 
+    private void configureTexture(boolean mipMap) {
+        if (mipMap) {
+            glGenerateMipmap(GL_TEXTURE_2D);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        } else {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        }
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public Texture(int width, int height) {
+        this(width, height, false);
+    }
+
+    public Texture(int width, int height, boolean hdr) {
+        address = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, address);
+        glTexImage2D(GL_TEXTURE_2D, 0,hdr ? GL_RGBA32F : GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        configureTexture(false);
+        this.w = width;
+        this.h = height;
+    }
+
+    private static final Stack<Integer> textureStack = new Stack<>();
     public void bind() {
+        textureStack.push(address);
         glBindTexture(GL_TEXTURE_2D, address);
     }
 
     public void unbind() {
-        glBindTexture(GL_TEXTURE_2D, 0);
+        textureStack.pop();
+        if (textureStack.empty()) {
+            glBindTexture(GL_TEXTURE_2D, 0);
+        } else {
+            glBindTexture(GL_TEXTURE_2D, textureStack.peek());
+        }
     }
 
-    /**
-     * This needs to be called when the texture is no longer needed. This will remove the texture from the GPU.
-     * If used in a try-with construct, the AutoCloseable will automatically do this without manual intervention.
-     */
     @Override
     public void destroy() {
         glDeleteTextures(address);

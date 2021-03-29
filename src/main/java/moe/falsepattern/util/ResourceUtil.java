@@ -40,4 +40,12 @@ public final class ResourceUtil {
         }
         return stream;
     }
+
+    public static @NonNull String getShaderPath(@NonNull String name) {
+        return "/moe/falsepattern/chromabeam/shaders/" + name;
+    }
+
+    public static @NonNull String readShaderFromResource(@NonNull String name) {
+        return readStringFromResource(getShaderPath(name));
+    }
 }

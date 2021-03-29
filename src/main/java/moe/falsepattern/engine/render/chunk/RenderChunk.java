@@ -1,14 +1,11 @@
 package moe.falsepattern.engine.render.chunk;
 
+import moe.falsepattern.engine.render.VertexBuffer;
 import moe.falsepattern.engine.render.texture.TextureRegionI;
 import moe.falsepattern.util.Destroyable;
-import org.lwjgl.system.MemoryUtil;
 
-import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-import static moe.falsepattern.chromabeam.world.WorldChunk.CHUNK_SIDE_LENGTH;
-import static moe.falsepattern.chromabeam.world.WorldChunk.COMPONENTS_PER_CHUNK;
 import static org.lwjgl.opengl.GL33C.*;
 
 /**
@@ -26,31 +23,22 @@ import static org.lwjgl.opengl.GL33C.*;
  * (i now know why modded minecraft was so laggy on older versions)
  */
 public class RenderChunk implements Destroyable {
-    public static final int FLOATS_PER_VERTEX = 4;
 
     public static final int VERTICES_PER_TRIANGLE = 3;
     public static final int TRIANGLES_PER_QUAD = 2;
+    public static final int FLOATS_PER_VERTEX = 4;
     public static final int VERTICES_PER_QUAD = TRIANGLES_PER_QUAD * VERTICES_PER_TRIANGLE;
 
     public static final int FLOATS_PER_QUAD = FLOATS_PER_VERTEX * VERTICES_PER_QUAD;
 
-    public static final int FLOATS_PER_CHUNK = COMPONENTS_PER_CHUNK * FLOATS_PER_QUAD;
-    public static final int VERTICES_PER_CHUNK = COMPONENTS_PER_CHUNK * VERTICES_PER_QUAD;
-
     public int x = 0;
     public int y = 0;
 
-    private final int vao;
-    private final int vbo;
-    private final FloatBuffer buffer;
-    private boolean changed = false;
-    boolean active = true;
-
+    private final VertexBuffer vertexBuffer;
 
     private final float[] BUF = new float[FLOATS_PER_QUAD];
     public void set(int x, int y, TextureRegionI texture) {
-        changed = true;
-        if (x >= CHUNK_SIDE_LENGTH || x < 0 || y >= CHUNK_SIDE_LENGTH || y < 0) {
+        if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
             throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
         }
         if (texture != null) {
@@ -67,38 +55,24 @@ public class RenderChunk implements Destroyable {
         } else {
             Arrays.fill(BUF, 0);
         }
-        buffer.put((y * CHUNK_SIDE_LENGTH + x) * FLOATS_PER_QUAD, BUF);
+        vertexBuffer.getBufferForWriting().put((y * edgeLength + x) * FLOATS_PER_QUAD, BUF);
     }
 
     private final ChunkRenderer parent;
 
-    RenderChunk(ChunkRenderer parent) {
+    private final int edgeLength;
+    private final int vertices;
+    RenderChunk(ChunkRenderer parent, int edgeLength) {
         this.parent = parent;
-        vao = glGenVertexArrays();
-        glBindVertexArray(vao);
-        vbo = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, FLOATS_PER_CHUNK * 4, GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, FLOATS_PER_VERTEX * 4, 0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, FLOATS_PER_VERTEX * 4, 8);
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        buffer = MemoryUtil.memCallocFloat(FLOATS_PER_CHUNK);
+        this.edgeLength = edgeLength;
+        vertices = edgeLength * edgeLength * VERTICES_PER_QUAD;
+        vertexBuffer = new VertexBuffer(vertices, 2, 2);
     }
 
     void draw() {
-        glBindVertexArray(vao);
-        if (changed) {
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, buffer);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            changed = false;
-        }
-        glDrawArrays(GL_TRIANGLES, 0, VERTICES_PER_CHUNK);
-        glBindVertexArray(0);
+        vertexBuffer.bind();
+        glDrawArrays(GL_TRIANGLES, 0, vertices);
+        vertexBuffer.unbind();
     }
 
     @Override
@@ -115,9 +89,6 @@ public class RenderChunk implements Destroyable {
     }
 
     void destroyInternal() {
-        glBindVertexArray(0);
-        glDeleteBuffers(vbo);
-        glDeleteVertexArrays(vao);
-        MemoryUtil.memFree(buffer);
+        vertexBuffer.destroy();
     }
 }

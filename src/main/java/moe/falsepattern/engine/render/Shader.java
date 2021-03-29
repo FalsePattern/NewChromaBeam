@@ -1,17 +1,25 @@
 package moe.falsepattern.engine.render;
 
+import moe.falsepattern.engine.Bindable;
 import moe.falsepattern.util.Destroyable;
+import moe.falsepattern.util.ResourceUtil;
 
 import java.util.Arrays;
+import java.util.Stack;
 
 import static org.lwjgl.opengl.GL33C.*;
 
 /**
  * Basic wrapper class for GLSL shaders.
  */
-public class Shader implements Destroyable {
+public class Shader implements Destroyable, Bindable {
     private final int program;
     private final int[] uniforms;
+
+    public static Shader fromShaderResource(String shaderName, String... uniforms) {
+        return new Shader(ResourceUtil.readShaderFromResource(shaderName + ".vert"), ResourceUtil.readShaderFromResource(shaderName + ".frag"), uniforms);
+    }
+
     public Shader(String vertexSource, String fragmentSource, String... uniforms) {
         int vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
         int fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
@@ -50,12 +58,20 @@ public class Shader implements Destroyable {
         return shader;
     }
 
+    private static final Stack<Integer> shaderStack = new Stack<>();
+
     public void bind() {
         glUseProgram(program);
+        shaderStack.push(program);
     }
 
     public void unbind() {
-        glUseProgram(0);
+        shaderStack.pop();
+        if (shaderStack.empty()) {
+            glUseProgram(0);
+        } else {
+            glUseProgram(shaderStack.peek());
+        }
     }
 
     @Override

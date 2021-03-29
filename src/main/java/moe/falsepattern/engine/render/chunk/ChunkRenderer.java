@@ -1,10 +1,7 @@
+
 package moe.falsepattern.engine.render.chunk;
 
-import moe.falsepattern.chromabeam.world.WorldChunk;
-import moe.falsepattern.engine.render.Camera;
-import moe.falsepattern.engine.render.Shader;
-import moe.falsepattern.util.Destroyable;
-import moe.falsepattern.util.ResourceUtil;
+import moe.falsepattern.engine.render.world.WorldRenderer;
 
 import static org.lwjgl.opengl.GL33C.*;
 
@@ -15,45 +12,30 @@ import java.util.function.Supplier;
 /**
  * Allocates, destroys, and draws the chunks.
  */
-public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
-    private static final String defaultVertexShaderPath = "/moe/falsepattern/chromabeam/shaders/tile.vert";
-    private static final String defaultFragmentShaderPath = "/moe/falsepattern/chromabeam/shaders/tile.frag";
-    private final Shader shader;
-    private final int chunkOffsetUniform;
-    private final int zoomUniform;
-    private final int aspectUniform;
+public class ChunkRenderer extends WorldRenderer implements Supplier<RenderChunk> {
+    private final int chunkUniform;
 
     private final List<RenderChunk> renderChunks = new ArrayList<>();
     private final List<RenderChunk> inactiveRenderChunks = new ArrayList<>();
-
-    public ChunkRenderer() {
-        this(ResourceUtil.readStringFromResource(defaultVertexShaderPath),
-                ResourceUtil.readStringFromResource(defaultFragmentShaderPath));
-    }
-    public ChunkRenderer(String vertexShaderSource, String fragmentShaderSource) {
-        shader = new Shader(vertexShaderSource, fragmentShaderSource,
-                "chunkOffset", "zoom", "aspect");
-        var unis = shader.getUniforms();
-        chunkOffsetUniform = unis[0];
-        zoomUniform = unis[1];
-        aspectUniform = unis[2];
+    private final int edgeSize;
+    public ChunkRenderer(int edgeSize) {
+        super("tile", "chunk");
+        this.edgeSize = edgeSize;
+        chunkUniform = childUniforms[0];
     }
 
-    public void drawChunks(Camera camera) {
-        shader.bind();
-        glUniform1f(zoomUniform, camera.getRenderZoom());
-        glUniform2f(aspectUniform, camera.aspect.x, camera.aspect.y);
+    @Override
+    protected void renderContent() {
         for (RenderChunk renderChunk : renderChunks) {
-            glUniform2f(chunkOffsetUniform,
-                    camera.pos.x + renderChunk.x * WorldChunk.CHUNK_SIDE_LENGTH,
-                    camera.pos.y + renderChunk.y * WorldChunk.CHUNK_SIDE_LENGTH);
+            glUniform2f(chunkUniform,
+                    renderChunk.x * edgeSize,
+                    renderChunk.y * edgeSize);
             renderChunk.draw();
         }
-        shader.unbind();
     }
 
     public RenderChunk allocateChunk() {
-        var chunk = new RenderChunk(this);
+        var chunk = new RenderChunk(this, edgeSize);
         renderChunks.add(chunk);
         return chunk;
     }
@@ -61,14 +43,12 @@ public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
     public void activateChunk(RenderChunk renderChunk) {
         if (inactiveRenderChunks.remove(renderChunk)) {
             renderChunks.add(renderChunk);
-            renderChunk.active = true;
         }
     }
 
     public void deactivateChunk(RenderChunk renderChunk) {
         if (renderChunks.remove(renderChunk)) {
             inactiveRenderChunks.add(renderChunk);
-            renderChunk.active = false;
         }
     }
 
@@ -87,16 +67,9 @@ public class ChunkRenderer implements Destroyable, Supplier<RenderChunk> {
             chunk.destroyInternal();
         }
         renderChunks.clear();
-        shader.destroy();
+        super.destroy();
     }
 
-    public void clear() {
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-
-    public void setClearColor(float r, float g, float b) {
-        glClearColor(r, g, b, 1f);
-    }
 
     @Override
     public RenderChunk get() {

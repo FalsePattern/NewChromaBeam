@@ -41,16 +41,4 @@ public interface TextureRegionI {
      * @return Vertical size of the tile in texture pixel coordinates.
      */
     int height();
-
-    /**
-     * Attach the underlying OpenGL texture to the render pipeline. This overwrites previously attached textures as per
-     * opengl specifications.
-     */
-    void bind();
-
-    /**
-     * Detach the underlying OpenGL texture to the render pipeline. This will detach any texture, regarless of whether
-     * it's related to this tile or not.
-     */
-    void unbind();
 }
