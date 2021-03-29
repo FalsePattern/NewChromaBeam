@@ -5,7 +5,6 @@ import moe.falsepattern.util.Destroyable;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.util.Stack;
 
 import static org.lwjgl.opengl.GL33C.*;
 
@@ -15,9 +14,9 @@ public class VertexBuffer implements Bindable, Destroyable {
     private final int vbo;
     private final FloatBuffer buffer;
     private boolean changed = false;
-    private final int attribs;
+
     public VertexBuffer(int vertices, int... attributes) {
-        attribs = attributes.length;
+        int attributeCount = attributes.length;
         int floatsPerVertex = 0;
         for (var attrib: attributes) {
             floatsPerVertex += attrib;
@@ -29,7 +28,7 @@ public class VertexBuffer implements Bindable, Destroyable {
         glBufferData(GL_ARRAY_BUFFER, (long) vertices * floatsPerVertex * 4, GL_DYNAMIC_DRAW);
         int stride = floatsPerVertex * 4;
         int offset = 0;
-        for (int i = 0; i < attribs; i++) {
+        for (int i = 0; i < attributeCount; i++) {
             glVertexAttribPointer(i, attributes[i], GL_FLOAT, false, stride, offset);
             offset += attributes[i] * 4;
             glEnableVertexAttribArray(i);

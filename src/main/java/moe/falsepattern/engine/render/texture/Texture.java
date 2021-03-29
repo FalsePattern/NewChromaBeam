@@ -7,7 +7,6 @@ import org.lwjgl.system.MemoryUtil;
 import static org.lwjgl.opengl.GL33C.*;
 
 import java.awt.image.BufferedImage;
-import java.util.Stack;
 
 /**
  * The simplest wrapper object for OpenGL textures. This is a 1 to 1 size region that maps to the entire input texture.

@@ -19,21 +19,21 @@ public final class ResourceUtil {
 
     @SneakyThrows
     public static @NonNull BufferedImage readImageFromResource(@NonNull String path) {
-        return ImageIO.read(getStreamFromResouce(path));
+        return ImageIO.read(getStreamFromResource(path));
     }
 
     @SneakyThrows
     public static @NonNull String readStringFromResource(@NonNull String path) {
-        return String.valueOf(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(getStreamFromResouce(path).readAllBytes())));
+        return String.valueOf(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(getStreamFromResource(path).readAllBytes())));
     }
 
     @SneakyThrows
     public static @NonNull byte[] readFileFromResource(@NonNull String path) {
-         return getStreamFromResouce(path).readAllBytes();
+         return getStreamFromResource(path).readAllBytes();
     }
 
     @SneakyThrows
-    public static @NonNull InputStream getStreamFromResouce(@NonNull String path) {
+    public static @NonNull InputStream getStreamFromResource(@NonNull String path) {
         var stream = ResourceUtil.class.getResourceAsStream(path);
         if (stream == null) {
             throw new MissingResourceException("Could not find texture", "ResourceUtil", path);

@@ -24,7 +24,7 @@
 - [ ] Audio
   - OpenAL
 - [ ] Save/Load feature
-  - This will be done with a 100% custom serializer to avoid issues with nondeterminism and importability
+  - This will be done with a 100% custom serializer to avoid issues with nondeterminism and portability
 
 [![forthebadge](https://forthebadge.com/images/badges/open-source.svg)](https://forthebadge.com)
 

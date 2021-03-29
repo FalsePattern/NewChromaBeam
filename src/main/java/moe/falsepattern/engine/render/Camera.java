@@ -14,8 +14,8 @@ public class Camera {
 
     /**
      * If the aspect ratio of the window changed, it should be entered here to keep the aspect ratio of the world 1:1.
-     * @param width The width of the framebuffer
-     * @param height The height of the framebuffer
+     * @param width The width of the frame buffer
+     * @param height The height of the frame buffer
      */
     public void setFromScreenResolution(float width, float height) {
         aspect.x = 1 / width;

@@ -1,13 +1,11 @@
 package moe.falsepattern.engine.render.world;
 
 
-import moe.falsepattern.engine.Bindable;
-import moe.falsepattern.engine.render.Camera;
 import moe.falsepattern.engine.render.Shader;
 import moe.falsepattern.util.Destroyable;
 
 import static moe.falsepattern.util.GLHelpers.glUniform2f;
-import static org.lwjgl.opengl.GL20C.glUniform1f;
+import static org.lwjgl.opengl.GL33C.*;
 
 public abstract class WorldRenderer extends Renderer implements Destroyable {
     private final int cameraUniform;

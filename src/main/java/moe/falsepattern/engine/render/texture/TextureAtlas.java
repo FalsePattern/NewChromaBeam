@@ -22,7 +22,7 @@ public class TextureAtlas extends Texture {
 
     private final HashMap<String, List<TextureRegion>> textures;
     public TextureAtlas(List<TextureTile> tiles) {
-        super(atlasify(tiles), true);
+        super(generateAtlasImage(tiles), true);
         textures = new HashMap<>();
         for (var tile: tiles) {
             var frameList = textures.computeIfAbsent(tile.textureName, (ignored) -> new ArrayList<>());
@@ -46,7 +46,7 @@ public class TextureAtlas extends Texture {
     }
 
     //Helper function for putting packed tiles into a texture atlas image.
-    private static BufferedImage atlasify(List<TextureTile> tiles) {
+    private static BufferedImage generateAtlasImage(List<TextureTile> tiles) {
         tiles.sort(Comparator.reverseOrder());
         var finalSize = pack(tiles);
         var result = new BufferedImage(finalSize.width, finalSize.height, TYPE_INT_ARGB);

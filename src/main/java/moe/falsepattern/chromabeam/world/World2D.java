@@ -73,7 +73,7 @@ public class World2D implements Destroyable, BeamResolver {
     private final Vector2i schedulerBuffer = new Vector2i();
     @Override
     public void scheduleBeam(int x, int y, Direction direction, BeamColor color) {
-        if (raycast(x, y, direction, schedulerBuffer)) {
+        if (rayCast(x, y, direction, schedulerBuffer)) {
             var beam = scheduleCache.size() == 0 ? new ScheduledBeam() : scheduleCache.remove(scheduleCache.size() - 1);
             beam.x = schedulerBuffer.x;
             beam.y = schedulerBuffer.y;
@@ -98,11 +98,11 @@ public class World2D implements Destroyable, BeamResolver {
     }
 
 
-    private final Vector4i raycastBuffer = new Vector4i();
+    private final Vector4i rayCastBuffer = new Vector4i();
     /**
      * Launches a virtual beam from the specified origin point along the specified cardinal axis, and puts the coordinates
      * of the first component it hits into the output buffer. Note that the output buffer will be updated even if the
-     * raycast doesn't detect a component, so make sure to use the return value as an indicator of successful detection,
+     * ray doesn't detect a component, so make sure to use the return value as an indicator of successful detection,
      * and not the value of the output buffer.
      *
      * Note: Due to internal caching this method is not thread-safe.
@@ -113,8 +113,8 @@ public class World2D implements Destroyable, BeamResolver {
      * @return True if the output buffer contains a valid component location, and false if no component was hit, and the
      * output buffer contains undefined values.
      */
-    public boolean raycast(int x, int y, Direction direction, Vector2i outputBuffer) {
-        var buf = raycastBuffer;
+    public boolean rayCast(int x, int y, Direction direction, Vector2i outputBuffer) {
+        var buf = rayCastBuffer;
         x = direction == Direction.LEFT ? x - 1 : direction == Direction.RIGHT ? x + 1 : x;
         y = direction == Direction.UP ? y - 1 : direction == Direction.DOWN ? y + 1 : y;
         buf.x = Math.floorDiv(x, WorldChunk.CHUNK_SIDE_LENGTH);

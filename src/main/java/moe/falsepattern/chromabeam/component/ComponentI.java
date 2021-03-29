@@ -42,7 +42,7 @@ public interface ComponentI {
 
     /**
      * Gets the texture of the component during the current tick. This may only change when {@link #tick} is called,
-     * otherwise it will cause graphical desynchronization.
+     * otherwise it will cause graphical de-synchronisation.
      * @return The current texture of the component.
      */
     TextureRegionI getTexture();

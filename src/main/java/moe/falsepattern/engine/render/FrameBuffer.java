@@ -6,12 +6,7 @@ import moe.falsepattern.engine.render.texture.Texture;
 import moe.falsepattern.engine.window.WindowResizeCallback;
 import moe.falsepattern.util.Destroyable;
 
-import java.util.Stack;
-
-import static org.lwjgl.opengl.GL20C.glDrawBuffers;
-import static org.lwjgl.opengl.GL30C.*;
-import static org.lwjgl.opengl.GL30C.glDeleteFramebuffers;
-import static org.lwjgl.opengl.GL32C.glFramebufferTexture;
+import static org.lwjgl.opengl.GL33C.*;
 
 public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable {
 
@@ -36,7 +31,7 @@ public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable 
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.address, 0);
         glDrawBuffers(GL_COLOR_ATTACHMENT0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            throw new IllegalStateException("Failed to configure framebuffer!");
+            throw new IllegalStateException("Failed to configure frame buffer!");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

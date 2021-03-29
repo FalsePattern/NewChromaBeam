@@ -4,7 +4,6 @@ package moe.falsepattern.engine.render.texture;
  * Canonical implementation of {@link TextureRegionI}.
  */
 public class TextureRegion implements TextureRegionI {
-    private final Texture texture;
     private final int x;
     private final int y;
     private final int w;
@@ -14,7 +13,6 @@ public class TextureRegion implements TextureRegionI {
     private final float u1;
     private final float v1;
     public TextureRegion(Texture texture, int x, int y, int w, int h) {
-        this.texture = texture;
         this.x = x;
         this.y = y;
         this.w = w;

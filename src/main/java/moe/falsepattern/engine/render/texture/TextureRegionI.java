@@ -23,7 +23,7 @@ public interface TextureRegionI {
     float v1();
 
     /**
-     * @return Horizonal position of the top-left point of the tile in texture pixel coordinates.
+     * @return Horizontal position of the top-left point of the tile in texture pixel coordinates.
      */
     int x();
 
@@ -33,7 +33,7 @@ public interface TextureRegionI {
     int y();
 
     /**
-     * @return Horizonal size of the tile in texture pixel coordinates.
+     * @return Horizontal size of the tile in texture pixel coordinates.
      */
     int width();
 

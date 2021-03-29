@@ -14,11 +14,11 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
     private final FrameBuffer backBuffer;
     private final FrameBuffer tempBuffer;
     private final WorldRenderer subRenderer;
-    private final int horizontalblur;
+    private final int horizontalBlurUniform;
     public DeferredRenderer(int width, int height, WorldRenderer subRenderer, String deferredShader) {
         this.subRenderer = subRenderer;
         shader = Shader.fromShaderResource(deferredShader, "horizontal");
-        horizontalblur = shader.getUniforms()[0];
+        horizontalBlurUniform = shader.getUniforms()[0];
         buffer = new VertexBuffer(4, 4, 2);
         buffer.getBufferForWriting().put(0, new float[]{
                 -1, 1 , 0, 1, 0, 1,
@@ -44,12 +44,12 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
         buffer.bind();
         backBuffer.getTexture().bind();
         tempBuffer.bind();
-        GL33C.glUniform1i(horizontalblur, 1);
+        GL33C.glUniform1i(horizontalBlurUniform, 1);
         GL33C.glDrawArrays(GL11C.GL_TRIANGLE_FAN, 0, 4);
         tempBuffer.unbind();
 
         tempBuffer.getTexture().bind();
-        GL33C.glUniform1i(horizontalblur, 0);
+        GL33C.glUniform1i(horizontalBlurUniform, 0);
         GL33C.glDrawArrays(GL11C.GL_TRIANGLE_FAN, 0, 4);
     }
 
