@@ -1,10 +1,10 @@
 #version 330 core
+//This code was created by Joey de Vries under the CC BY-NC 4.0 license. See ATTRIBUTIONS.MD for further information.
 in vec2 TexCoords;
 out vec4 FragColor;
 
 uniform sampler2D image;
 uniform bool horizontal;
-uniform float time;
 uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
 
 void main()
