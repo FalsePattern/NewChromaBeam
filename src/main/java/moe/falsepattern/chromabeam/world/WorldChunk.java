@@ -3,6 +3,7 @@ package moe.falsepattern.chromabeam.world;
 import moe.falsepattern.chromabeam.component.ComponentI;
 import moe.falsepattern.engine.render.chunk.RenderChunk;
 import moe.falsepattern.util.Destroyable;
+import org.joml.Math;
 import org.joml.Vector2i;
 
 import java.util.ArrayList;
@@ -48,9 +49,10 @@ public class WorldChunk implements Destroyable, Tickable {
 
     public void tick(BeamResolver resolver) {
         for (var component: updateQueue) {
-            component.tick((dir, color) -> {
+            component.tick((dir, red, green, blue) -> {
+                if (red <= 0 && green <= 0 && blue <= 0) return;
                 var pos = reverseComponentMap.get(component);
-                resolver.scheduleBeam(pos.x + baseX, pos.y + baseY, dir, color);
+                resolver.scheduleBeam(pos.x + baseX, pos.y + baseY, dir, Math.max(0, red), Math.max(0, green), Math.max(0, blue));
             });
             if (component.graphicsChanged()) {
                 var vec = reverseComponentMap.get(component);

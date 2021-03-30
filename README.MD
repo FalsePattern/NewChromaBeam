@@ -6,7 +6,7 @@
 - [x] Laser Simulation
   - [x] Beam resolver and component detection
   - [x] Update scheduler and dispatcher
-  - [ ] Analog lasers
+  - [x] Analog lasers
 - [x] Laser rendering
   - [x] line-based renderer with deferred shaders for glow effect.
 - [ ] Basic input system

@@ -1,12 +1,13 @@
 package moe.falsepattern.chromabeam.world;
 
-import moe.falsepattern.chromabeam.beam.BeamColor;
+import moe.falsepattern.chromabeam.TestUtil;
 import moe.falsepattern.chromabeam.beam.Direction;
 import moe.falsepattern.chromabeam.component.ComponentI;
 import moe.falsepattern.engine.render.texture.TextureRegionI;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
-import java.util.function.BiConsumer;
+import java.awt.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,14 +16,14 @@ public class BeamTest {
     public void testBeamInteraction() {
         System.out.println("Testing basic beam collision detection");
         var world = new World2D(null);
-        var prod1 = new BeamProducer(Direction.UP, BeamColor.RED);
-        var prod2 = new BeamProducer(Direction.RIGHT, BeamColor.GREEN);
-        var prod3 = new BeamProducer(Direction.DOWN, BeamColor.BLUE);
-        var prod4 = new BeamProducer(Direction.LEFT, BeamColor.WHITE);
-        var cons1 = new BeamConsumer(Direction.UP, BeamColor.RED);
-        var cons2 = new BeamConsumer(Direction.RIGHT, BeamColor.GREEN);
-        var cons3 = new BeamConsumer(Direction.DOWN, BeamColor.BLUE);
-        var cons4 = new BeamConsumer(Direction.LEFT, BeamColor.WHITE);
+        var prod1 = new BeamProducer(Direction.UP, TestUtil.colorToVector(Color.RED));
+        var prod2 = new BeamProducer(Direction.RIGHT, TestUtil.colorToVector(Color.GREEN));
+        var prod3 = new BeamProducer(Direction.DOWN, TestUtil.colorToVector(Color.BLUE));
+        var prod4 = new BeamProducer(Direction.LEFT, TestUtil.colorToVector(Color.WHITE));
+        var cons1 = new BeamConsumer(Direction.UP, TestUtil.colorToVector(Color.RED));
+        var cons2 = new BeamConsumer(Direction.RIGHT, TestUtil.colorToVector(Color.GREEN));
+        var cons3 = new BeamConsumer(Direction.DOWN, TestUtil.colorToVector(Color.BLUE));
+        var cons4 = new BeamConsumer(Direction.LEFT, TestUtil.colorToVector(Color.WHITE));
         world.set(0, -1, prod1);
         world.set(1, 0, prod2);
         world.set(0, 1, prod3);
@@ -38,23 +39,69 @@ public class BeamTest {
         assertTrue(cons4.match, "Collision check 4 failed");
     }
 
+    @Test
+    public void testBeamZeroRemove() {
+        System.out.println("Testing zero-beam and negative beam removal");
+        var world = new World2D(null);
+        var prod0 = new BeamProducer(Direction.LEFT, new Vector3f(0, 0, 0));
+        var prod1 = new BeamProducer(Direction.LEFT, new Vector3f(-1, 0, 0));
+        var prod2 = new BeamProducer(Direction.LEFT, new Vector3f(0, -1, 0));
+        var prod3 = new BeamProducer(Direction.LEFT, new Vector3f(-1, -1, 0));
+        var prod4 = new BeamProducer(Direction.LEFT, new Vector3f(0, 0, -1));
+        var prod5 = new BeamProducer(Direction.LEFT, new Vector3f(-1, 0, -1));
+        var prod6 = new BeamProducer(Direction.LEFT, new Vector3f(0, -1, -1));
+        var prod7 = new BeamProducer(Direction.LEFT, new Vector3f(-1, -1, -1));
+        world.set(0, 0, prod0);
+        world.set(0, 1, prod1);
+        world.set(0, 2, prod2);
+        world.set(0, 3, prod3);
+        world.set(0, 4, prod4);
+        world.set(0, 5, prod5);
+        world.set(0, 6, prod6);
+        world.set(0, 7, prod7);
+        for (int i = 0; i < 8; i++) {
+            var cons = new NullConsumer();
+            world.set(-2, i, cons);
+        }
+        assertDoesNotThrow(world::tick);
+        //Now, to make sure the beams actually hit the targets...
+        prod0.outCol.set(1, 1, 1);
+        assertThrows(IllegalStateException.class, world::tick);
+    }
+
+    @Test
+    public void testClamp() {
+        System.out.println("Testing negative beam channel clamping");
+        var world = new World2D(null);
+        var prod = new BeamProducer(Direction.RIGHT, new Vector3f(-1, 0, 1));
+        var cons = new BeamConsumer(Direction.RIGHT, new Vector3f(0, 0, 1));
+        world.set(0, 0, prod);
+        world.set(2, 0, cons);
+        world.tick();
+        assertTrue(cons.match);
+    }
+
     private static class BeamConsumer implements ComponentI{
 
         private final Direction desDir;
-        private final BeamColor desCol;
+        private final Vector3f desiredColor;
 
         boolean match = false;
-        BeamConsumer(Direction desiredDirection, BeamColor desiredColor) {
+        BeamConsumer(Direction desiredDirection, Vector3f desiredColor) {
             this.desDir = desiredDirection;
-            this.desCol = desiredColor;
+            this.desiredColor = new Vector3f(desiredColor);
         }
         @Override
-        public void incomingBeam(Direction direction, BeamColor color) {
-            match = direction == desDir && color == desCol;
+        public void incomingBeam(Direction direction, float red, float green, float blue) {
+            match = direction == desDir && desiredColor.x == red && desiredColor.y == green && desiredColor.z == blue;
+            if (!match) {
+                System.out.println("Expected: (" + desiredColor.x + ", " + desiredColor.y + ", " + desiredColor.z + ")");
+                System.out.println("Actual: (" + red + ", " + green + ", " + blue + ")");
+            }
         }
 
         @Override
-        public void tick(BiConsumer<Direction, BeamColor> beamEmitter) {
+        public void tick(BeamEmitter beamEmitter) {
 
         }
 
@@ -77,24 +124,51 @@ public class BeamTest {
     private static class BeamProducer implements ComponentI{
 
         private final Direction outDir;
-        private final BeamColor outCol;
+        private final Vector3f outCol;
 
-        BeamProducer(Direction outputDirection, BeamColor outputColor) {
+        BeamProducer(Direction outputDirection, Vector3f outputColor) {
             this.outDir = outputDirection;
-            this.outCol = outputColor;
+            this.outCol = new Vector3f(outputColor);
         }
         @Override
-        public void incomingBeam(Direction direction, BeamColor color) {
+        public void incomingBeam(Direction direction, float red, float green, float blue) {
             throw new IllegalArgumentException("Beam producer hit by beam?");
         }
 
         @Override
-        public void tick(BiConsumer<Direction, BeamColor> beamEmitter) {
-            beamEmitter.accept(outDir, outCol);
+        public void tick(BeamEmitter beamEmitter) {
+            beamEmitter.emit(outDir, outCol.x, outCol.y, outCol.z);
         }
 
         @Override
         public BeamProducer copy() {
+            return null;
+        }
+
+        @Override
+        public boolean graphicsChanged() {
+            return false;
+        }
+
+        @Override
+        public TextureRegionI getTexture() {
+            return null;
+        }
+    }
+
+    private static class NullConsumer implements ComponentI{
+        @Override
+        public void incomingBeam(Direction direction, float red, float green, float blue) {
+            throw new IllegalStateException("Beam received by null consumer component");
+        }
+
+        @Override
+        public void tick(BeamEmitter beamEmitter) {
+
+        }
+
+        @Override
+        public NullConsumer copy() {
             return null;
         }
 

@@ -1,8 +1,8 @@
 package moe.falsepattern.chromabeam.component;
 
 import manifold.ext.rt.api.Self;
-import moe.falsepattern.chromabeam.beam.BeamColor;
 import moe.falsepattern.chromabeam.beam.Direction;
+import moe.falsepattern.chromabeam.world.BeamEmitter;
 import moe.falsepattern.engine.render.texture.TextureRegionI;
 
 import java.util.function.BiConsumer;
@@ -17,14 +17,13 @@ public interface ComponentI {
      * Handle a beam hitting the component in the specified direction with the specified color.
      * @param direction The direction of the incoming beam. Note: this is the way the beam is headed, not the face it
      *                  hit, so a beam with direction RIGHT hit the LEFT face of the component.
-     * @param color The color of the incoming beam
      */
-    void incomingBeam(Direction direction, BeamColor color);
+    void incomingBeam(Direction direction, float red, float green, float blue);
 
     /**
      * Executes 1 time unit of simulation in the component. Components MUST do graphics and output changes here.
      */
-    void tick(BiConsumer<Direction, BeamColor> beamEmitter);
+    void tick(BeamEmitter beamEmitter);
 
     /**
      * Creates an identical copy of the component, but with each internal value deep-copied to be fully independent

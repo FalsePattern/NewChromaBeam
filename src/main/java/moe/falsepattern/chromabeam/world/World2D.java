@@ -1,6 +1,5 @@
 package moe.falsepattern.chromabeam.world;
 
-import moe.falsepattern.chromabeam.beam.BeamColor;
 import moe.falsepattern.chromabeam.beam.Direction;
 import moe.falsepattern.chromabeam.component.ComponentI;
 import moe.falsepattern.engine.render.chunk.RenderChunk;
@@ -61,7 +60,7 @@ public class World2D implements Destroyable, BeamResolver {
             chunk.tick(this);
         }
         for (var beam:scheduledBeams) {
-            get(beam.x, beam.y).incomingBeam(beam.direction, beam.color);
+            get(beam.x, beam.y).incomingBeam(beam.direction, beam.red, beam.green, beam.blue);
         }
         scheduleCache.addAll(scheduledBeams);
         scheduledBeams.clear();
@@ -72,13 +71,15 @@ public class World2D implements Destroyable, BeamResolver {
 
     private final Vector2i schedulerBuffer = new Vector2i();
     @Override
-    public void scheduleBeam(int x, int y, Direction direction, BeamColor color) {
+    public void scheduleBeam(int x, int y, Direction direction, float red, float green, float blue) {
         if (rayCast(x, y, direction, schedulerBuffer)) {
             var beam = scheduleCache.size() == 0 ? new ScheduledBeam() : scheduleCache.remove(scheduleCache.size() - 1);
             beam.x = schedulerBuffer.x;
             beam.y = schedulerBuffer.y;
             beam.direction = direction;
-            beam.color = color;
+            beam.red = red;
+            beam.green = green;
+            beam.blue = blue;
             scheduledBeams.add(beam);
         }
     }
@@ -87,7 +88,9 @@ public class World2D implements Destroyable, BeamResolver {
         int x;
         int y;
         Direction direction;
-        BeamColor color;
+        float red;
+        float green;
+        float blue;
     }
 
     @Override
