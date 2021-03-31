@@ -1,4 +1,8 @@
 # ChromaBeam Rewrite
+
+Progress blog: https://falsepattern.moe/chromabeam/blog.html
+
+Feature progress tracker:
 - [x] Basic world renderer
 - [x] Component System
   - [x] Generic component primitives
