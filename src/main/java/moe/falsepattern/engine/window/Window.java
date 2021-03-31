@@ -70,8 +70,8 @@ public class Window implements Destroyable {
         glfwHideWindow(address);
     }
 
-    public void vSync(boolean enabled) {
-        glfwSwapInterval(enabled ? 1 : 0);
+    public void vSync(int frames) {
+        glfwSwapInterval(frames);
     }
 
     public void addResizeCallback(WindowResizeCallback callback) {
