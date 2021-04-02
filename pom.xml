@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>moe.falsepattern</groupId>
+    <groupId>xyz.chromabeam</groupId>
     <artifactId>chromabeam</artifactId>
     <version>0.0.1-dev</version>
 
     <properties>
         <java.version>16</java.version>
         <project.encoding>UTF-8</project.encoding>
-        <project.main>moe.falsepattern.chromabeam.Main</project.main>
+        <project.main>xyz.chromabeam.Main</project.main>
         <lombok.version>1.18.18</lombok.version>
         <lwjgl.version>3.2.3</lwjgl.version>
         <joml.version>1.10.1</joml.version>
