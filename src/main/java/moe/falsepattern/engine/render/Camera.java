@@ -1,28 +1,66 @@
 package moe.falsepattern.engine.render;
 
-import org.joml.Vector2f;
+import org.joml.*;
 
 /**
  * A simple 2D camera with a position and zoom level. Used by the renderer.
  */
 public class Camera {
-    private static final float baseZoom = 2;
+    public final Vector2f pos = new Vector2f(0, 0);
+    private final Vector2f aspect = new Vector2f(0, 0);
+    private final Vector2f resolution = new Vector2f(0, 0);
+    private final Matrix3x2f projectionMatrix = new Matrix3x2f();
+    private final Matrix3x2f unProjectionMatrix = new Matrix3x2f();
+    private float zoom = 1;
+    private boolean dirty = true;
 
-    public final Vector2f pos = new Vector2f();
-    public final Vector2f aspect = new Vector2f();
-    public float zoom = 1;
-
-    /**
-     * If the aspect ratio of the window changed, it should be entered here to keep the aspect ratio of the world 1:1.
-     * @param width The width of the frame buffer
-     * @param height The height of the frame buffer
-     */
-    public void setFromScreenResolution(float width, float height) {
-        aspect.x = 1 / width;
-        aspect.y = -1 / height;
+    public void setViewport(int x, int y, int w, int h) {
+        resolution.x = w;
+        resolution.y = h;
+        aspect.x = 1f / w;
+        aspect.y = -1f / h;
+        viewport[0] = x;
+        viewport[1] = y;
+        viewport[2] = w;
+        viewport[3] = h;
     }
 
-    public float getRenderZoom() {
-        return baseZoom * zoom;
+    public void setPosition(Vector2fc position) {
+        pos.set(position);
+    }
+
+    public Vector2fc getPosition() {
+        return pos;
+    }
+
+    public void setZoom(float zoom) {
+        this.zoom = zoom;
+    }
+
+    public float getZoom() {
+        return zoom;
+    }
+
+    private final Vector2f calcBuffer = new Vector2f();
+    public Matrix3x2f getProjectionMatrix() {
+        if (dirty) {
+            dirty = false;
+            return projectionMatrix.identity().scale(zoom * 2).scale(aspect).translate(pos.negate(calcBuffer));
+        } else {
+            return projectionMatrix;
+        }
+    }
+
+    public Vector2f worldPosToScreen(Vector2fc position, Vector2f destination) {
+        return getProjectionMatrix().transformPosition(position, destination);
+    }
+
+    public Vector2f worldDirToScreen(Vector2fc direction, Vector2f destination) {
+        return getProjectionMatrix().transformDirection(direction, destination);
+    }
+
+    private final int[] viewport = new int[4];
+    public Vector2f screenToWorldSpace(Vector2fc position, Vector2f destination) {
+        return getProjectionMatrix().unproject(position.x(), position.y(), viewport, destination);
     }
 }

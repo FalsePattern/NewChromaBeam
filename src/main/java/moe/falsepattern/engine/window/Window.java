@@ -1,8 +1,15 @@
 package moe.falsepattern.engine.window;
 
+import manifold.ext.rt.api.Extension;
+import manifold.ext.rt.api.Jailbreak;
 import moe.falsepattern.engine.Constants;
 import moe.falsepattern.util.Destroyable;
+import moe.falsepattern.util.WindowsUtil;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.APIUtil;
+import org.lwjgl.system.JNI;
+import org.lwjgl.system.windows.User32;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +28,10 @@ public class Window implements Destroyable {
     private final WindowCloseCallback closeCallback;
     private int width;
     private int height;
+    public final Keyboard keyboard = new Keyboard();
+    public final Mouse mouse = new Mouse();
+    private final long hWnd;
     public Window(int width, int height, String title, WindowCloseCallback closeCallback) {
-
         this.width = width;
         this.height = height;
         if (singleton != null) {
@@ -41,8 +50,17 @@ public class Window implements Destroyable {
         if (address == 0L) {
             throw new ExceptionInInitializerError("Failed to create GLFW window!");
         }
-        glfwSetWindowSizeCallback(address, Window::windowSizeCallback);
-        glfwSetWindowCloseCallback(address, Window::windowCloseCallback);
+        hWnd = WindowsUtil.IS_WINDOWS ? GLFWNativeWin32.glfwGetWin32Window(address) : 0;
+        glfwSetWindowSizeCallback(address, this::windowSizeCallback);
+        glfwSetWindowCloseCallback(address, this::windowCloseCallback);
+        glfwSetWindowFocusCallback(address, this::windowFocusCallback);
+
+        glfwSetKeyCallback(address, this::keyCallback);
+        glfwSetCharCallback(address, this::charCallback);
+
+        glfwSetCursorPosCallback(address, this::cursorPosCallback);
+        glfwSetMouseButtonCallback(address, this::mouseButtonCallback);
+        glfwSetScrollCallback(address, this::scrollCallback);
         this.closeCallback = (closeCallback == null) ? () -> {} : closeCallback;
         singleton = this;
         glfwMakeContextCurrent(address);
@@ -50,6 +68,7 @@ public class Window implements Destroyable {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
+
 
     @Override
     public void destroy() {
@@ -82,16 +101,6 @@ public class Window implements Destroyable {
         glfwPollEvents();
     }
 
-    private static void windowCloseCallback(long address) {
-        singleton.closeCallback.accept();
-    }
-
-    private static void windowSizeCallback(long address, int width, int height) {
-        singleton.width = width;
-        singleton.height = height;
-        singleton.resizeCallbacks.forEach((consumer) -> consumer.accept(width, height));
-    }
-
     public int getWidth() {
         return width;
     }
@@ -99,5 +108,81 @@ public class Window implements Destroyable {
     public int getHeight() {
         return height;
     }
+
+    private void windowCloseCallback(long address) {
+        closeCallback.accept();
+    }
+
+    private void windowSizeCallback(long address, int width, int height) {
+        this.width = width;
+        this.height = height;
+        this.resizeCallbacks.forEach((consumer) -> consumer.accept(width, height));
+    }
+
+    private void windowFocusCallback(long window, boolean focused) {
+        if (!focused) {
+            keyboard.clearState();
+        }
+    }
+
+    private void charCallback(long window, int codepoint) {
+        keyboard.onChar((char)codepoint);
+    }
+
+    private void keyCallback(long window, int key, int scancode, int action, int mods) {
+        switch (action) {
+            case GLFW_RELEASE:
+                keyboard.onKeyReleased(key);
+                break;
+            case GLFW_PRESS:
+                keyboard.onKeyPressed(key);
+                break;
+            case GLFW_REPEAT:
+                if (keyboard.getAutorepeat()) {
+                    keyboard.onKeyPressed(key);
+                }
+        }
+    }
+
+    private void cursorPosCallback(long window, double x, double y) {
+        if (WindowsUtil.IS_WINDOWS) {
+            //Smart mouse auto-capturing for windows systems
+            if (x >= 0 && x < width && y >= 0 && y < height) {
+                mouse.onMouseMove((int) x, (int) y);
+                if (!mouse.isInWindow()) {
+                    WindowsUtil.SetCapture(hWnd);
+                    mouse.onMouseEnter();
+                }
+            } else {
+                if (mouse.anyPressed()) {
+                    mouse.onMouseMove((int) x, (int) y);
+                } else {
+                    WindowsUtil.ReleaseCapture(hWnd);
+                    mouse.onMouseLeave();
+                }
+            }
+        } else {
+            //Primitive input handling for linux, because
+            mouse.onMouseMove((int)x, (int)y);
+        }
+    }
+
+    private void mouseButtonCallback(long window, int button, int action, int mods) {
+        switch (button) {
+            case GLFW_MOUSE_BUTTON_LEFT:
+                if (action == GLFW_PRESS) mouse.onLeftPressed(); else mouse.onLeftReleased();
+                break;
+            case GLFW_MOUSE_BUTTON_MIDDLE:
+                if (action == GLFW_PRESS) mouse.onMiddlePressed(); else mouse.onMiddleReleased();
+                break;
+            case GLFW_MOUSE_BUTTON_RIGHT:
+                if (action == GLFW_PRESS) mouse.onRightPressed(); else mouse.onRightReleased();
+        }
+    }
+
+    private void scrollCallback(long window, double x, double y) {
+        mouse.onWheelDelta(x, y);
+    }
+
 
 }

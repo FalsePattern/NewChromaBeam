@@ -3,38 +3,36 @@ package moe.falsepattern.engine.render.world;
 
 import moe.falsepattern.engine.render.Shader;
 import moe.falsepattern.util.Destroyable;
+import org.lwjgl.system.MemoryUtil;
+
+import java.nio.FloatBuffer;
 
 import static moe.falsepattern.util.GLHelpers.glUniform2f;
 import static org.lwjgl.opengl.GL33C.*;
 
 public abstract class WorldRenderer extends Renderer implements Destroyable {
-    private final int cameraUniform;
-    private final int aspectUniform;
-    private final int zoomUniform;
+    private final int projectionMatrixUniform;
     private final Shader shader;
+    private final FloatBuffer matrixBuffer;
 
     protected final int[] childUniforms;
 
     public WorldRenderer(String shaderName, String... customUniforms) {
-        String[] uniStrings = new String[customUniforms.length + 3];
-        uniStrings[0] = "camera";
-        uniStrings[1] = "aspect";
-        uniStrings[2] = "zoom";
-        System.arraycopy(customUniforms, 0, uniStrings, 3, customUniforms.length);
+        String[] uniStrings = new String[customUniforms.length + 1];
+        uniStrings[0] = "projectionMatrix";
+        System.arraycopy(customUniforms, 0, uniStrings, 1, customUniforms.length);
         shader = Shader.fromShaderResource(shaderName, uniStrings);
         var unis = shader.getUniforms();
-        cameraUniform = unis[0];
-        aspectUniform = unis[1];
-        zoomUniform = unis[2];
+        projectionMatrixUniform = unis[0];
         childUniforms = new int[customUniforms.length];
-        System.arraycopy(unis, 3, childUniforms, 0, customUniforms.length);
+        System.arraycopy(unis, 1, childUniforms, 0, customUniforms.length);
+        matrixBuffer = MemoryUtil.memAllocFloat(9);
     }
 
     public void render() {
         shader.bind();
-        glUniform2f(cameraUniform, camera.pos);
-        glUniform2f(aspectUniform, camera.aspect);
-        glUniform1f(zoomUniform, camera.getRenderZoom());
+        camera.getProjectionMatrix().get3x3(matrixBuffer);
+        glUniformMatrix3fv(projectionMatrixUniform, false, matrixBuffer);
         renderContent();
     }
 
@@ -43,5 +41,6 @@ public abstract class WorldRenderer extends Renderer implements Destroyable {
     @Override
     public void destroy() {
         shader.destroy();
+        MemoryUtil.memFree(matrixBuffer);
     }
 }
