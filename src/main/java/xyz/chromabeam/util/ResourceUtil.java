@@ -1,10 +1,8 @@
 package xyz.chromabeam.util;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -17,35 +15,31 @@ import java.util.MissingResourceException;
  */
 public final class ResourceUtil {
 
-    @SneakyThrows
-    public static @NonNull BufferedImage readImageFromResource(@NonNull String path) {
+    public static BufferedImage readImageFromResource(String path) throws IOException {
         return ImageIO.read(getStreamFromResource(path));
     }
 
-    @SneakyThrows
-    public static @NonNull String readStringFromResource(@NonNull String path) {
+    public static String readStringFromResource(String path) throws IOException {
         return String.valueOf(StandardCharsets.UTF_8.decode(ByteBuffer.wrap(getStreamFromResource(path).readAllBytes())));
     }
 
-    @SneakyThrows
-    public static @NonNull byte[] readFileFromResource(@NonNull String path) {
+    public static byte[] readFileFromResource(String path) throws IOException {
          return getStreamFromResource(path).readAllBytes();
     }
 
-    @SneakyThrows
-    public static @NonNull InputStream getStreamFromResource(@NonNull String path) {
+    public static InputStream getStreamFromResource(String path) throws IOException {
         var stream = ResourceUtil.class.getResourceAsStream(path);
         if (stream == null) {
-            throw new MissingResourceException("Could not find texture", "ResourceUtil", path);
+            throw new IOException("Could not find texture at " + path);
         }
         return stream;
     }
 
-    public static @NonNull String getShaderPath(@NonNull String name) {
+    public static String getShaderPath(String name) {
         return "/xyz/chromabeam/shaders/" + name;
     }
 
-    public static @NonNull String readShaderFromResource(@NonNull String name) {
+    public static String readShaderFromResource(String name) throws IOException {
         return readStringFromResource(getShaderPath(name));
     }
 }

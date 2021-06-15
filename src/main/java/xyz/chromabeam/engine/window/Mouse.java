@@ -45,6 +45,9 @@ public class Mouse {
     public Vector2i getPos() {
         return new Vector2i(x, y);
     }
+    public Vector2i getPos(Vector2i buffer) {
+        return buffer.set(x, y);
+    }
     public int getPosX() {
         return x;
     }

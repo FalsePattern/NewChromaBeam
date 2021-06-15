@@ -21,9 +21,9 @@ public class IntMap2D<T> implements Iterable<T>{
     }
 
     public T get(int x, int y) {
-        var row = map[y];
+        var row = map.get(y);
         if (row != null) {
-            return row[x];
+            return row.get(x);
         }
         return null;
     }
@@ -43,20 +43,20 @@ public class IntMap2D<T> implements Iterable<T>{
     }
 
     public boolean isEmptyAbove(int x, int y) {
-        return map.entrySet().stream().filter(entry -> entry.getKey() < y).anyMatch(entry -> entry.getValue().containsKey(x));
+        return map.entrySet().stream().filter(entry -> entry.getKey() < y).noneMatch(entry -> entry.getValue().containsKey(x));
     }
 
     public boolean isEmptyBelow(int x, int y) {
-        return map.entrySet().stream().filter(entry -> entry.getKey() > y).anyMatch(entry -> entry.getValue().containsKey(x));
+        return map.entrySet().stream().filter(entry -> entry.getKey() > y).noneMatch(entry -> entry.getValue().containsKey(x));
     }
 
     public boolean isEmptyLeft(int x, int y) {
-        var row = map[y];
+        var row = map.get(y);
         return row == null || row.keySet().stream().noneMatch((key) -> key < x);
     }
 
     public boolean isEmptyRight(int x, int y) {
-        var row = map[y];
+        var row = map.get(y);
         return row == null || row.keySet().stream().noneMatch((key) -> key > x);
     }
 
@@ -83,7 +83,7 @@ public class IntMap2D<T> implements Iterable<T>{
     }
 
     public void delete(int x, int y) {
-        var row = map[y];
+        var row = map.get(y);
         if (row != null) {
             if (row.remove(x) != null) {
                 size--;

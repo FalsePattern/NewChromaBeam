@@ -7,5 +7,6 @@ uniform mat3 projectionMatrix;
 uniform vec2 chunk;
 void main() {
     uv = uvIN;
-    gl_Position = vec4((projectionMatrix * vec3(position - chunk, 1.0)).xy, 0.0, 1.0);
+    gl_Position = vec4((projectionMatrix * vec3(position + chunk, 1.0)).xy, 0.0, 1.0);
 }
+

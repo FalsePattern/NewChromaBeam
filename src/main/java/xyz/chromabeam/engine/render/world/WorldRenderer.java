@@ -5,6 +5,7 @@ import xyz.chromabeam.engine.render.Shader;
 import xyz.chromabeam.util.Destroyable;
 import org.lwjgl.system.MemoryUtil;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL33C.*;
@@ -20,7 +21,11 @@ public abstract class WorldRenderer extends Renderer implements Destroyable {
         String[] uniStrings = new String[customUniforms.length + 1];
         uniStrings[0] = "projectionMatrix";
         System.arraycopy(customUniforms, 0, uniStrings, 1, customUniforms.length);
-        shader = Shader.fromShaderResource(shaderName, uniStrings);
+        try {
+            shader = Shader.fromShaderResource(shaderName, uniStrings);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         var unis = shader.getUniforms();
         projectionMatrixUniform = unis[0];
         childUniforms = new int[customUniforms.length];

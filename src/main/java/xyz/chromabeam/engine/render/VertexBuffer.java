@@ -13,6 +13,7 @@ public class VertexBuffer implements Bindable, Destroyable {
     private final int vao;
     private final int vbo;
     private final FloatBuffer buffer;
+    private final long pBuffer;
     private boolean changed = false;
 
     public VertexBuffer(int vertices, int... attributes) {
@@ -36,11 +37,17 @@ public class VertexBuffer implements Bindable, Destroyable {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         buffer = MemoryUtil.memCallocFloat(vertices * floatsPerVertex);
+        pBuffer = MemoryUtil.memAddress(buffer);
     }
 
     public FloatBuffer getBufferForWriting() {
         changed = true;
         return buffer;
+    }
+
+    public long getWriteBufferPointer() {
+        changed = true;
+        return pBuffer;
     }
 
     public void sync() {

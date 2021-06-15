@@ -4,6 +4,7 @@ import xyz.chromabeam.engine.Bindable;
 import xyz.chromabeam.util.Destroyable;
 import xyz.chromabeam.util.ResourceUtil;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL33C.*;
@@ -15,7 +16,7 @@ public class Shader implements Destroyable, Bindable {
     private final int program;
     private final int[] uniforms;
 
-    public static Shader fromShaderResource(String shaderName, String... uniforms) {
+    public static Shader fromShaderResource(String shaderName, String... uniforms) throws IOException {
         return new Shader(ResourceUtil.readShaderFromResource(shaderName + ".vert"), ResourceUtil.readShaderFromResource(shaderName + ".frag"), uniforms);
     }
 

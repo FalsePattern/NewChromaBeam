@@ -1,6 +1,5 @@
 package xyz.chromabeam.engine.render;
 
-import manifold.ext.rt.api.Jailbreak;
 import xyz.chromabeam.engine.Bindable;
 import xyz.chromabeam.engine.render.texture.Texture;
 import xyz.chromabeam.engine.window.WindowResizeCallback;
@@ -10,11 +9,15 @@ import static org.lwjgl.opengl.GL33C.*;
 
 public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable {
 
+    public static class Friend {
+        private Friend() {}
+        private static final Friend FRIEND = new Friend();
+    }
+
     private int width;
     private int height;
     private final int address;
 
-    @Jailbreak //Access private stuff without reflection
     private Texture texture;
 
     public FrameBuffer(int width, int height) {
@@ -28,7 +31,7 @@ public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable 
         }
         glBindFramebuffer(GL_FRAMEBUFFER, address);
         texture = new Texture(width, height, true);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.address, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.address(Friend.FRIEND), 0);
         glDrawBuffers(GL_COLOR_ATTACHMENT0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             throw new IllegalStateException("Failed to configure frame buffer!");

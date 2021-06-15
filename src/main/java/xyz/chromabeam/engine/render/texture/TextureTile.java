@@ -2,6 +2,8 @@ package xyz.chromabeam.engine.render.texture;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,7 +19,32 @@ public class TextureTile implements Comparable<TextureTile> {
     final int textureFrame;
     final Rectangle textureGeometry;
 
-    public TextureTile(BufferedImage texture, String textureName, int textureFrame) {
+    public static List<TextureTile> splitIntoTiles(BufferedImage texture, int tileWidth, int tileHeight, String name) {
+        if (texture.getWidth() % tileWidth != 0 || texture.getHeight() % tileHeight != 0) {
+            throw new IllegalArgumentException("Cannot split texture " + name + " into " + tileWidth + "x" + tileHeight + "-sized tiles: texture size is not a multiple of tile size!");
+        }
+        var output = new ArrayList<TextureTile>();
+        int nX = texture.getWidth() / tileWidth;
+        int nY = texture.getHeight() / tileHeight;
+        for (int y = 0; y < nY; y++) {
+            for (int x = 0; x < nX; x++) {
+                var subregion = new BufferedImage(tileWidth, tileHeight, BufferedImage.TYPE_INT_ARGB);
+                for (int tY = 0; tY < tileHeight; tY++) {
+                    for (int tX = 0; tX < tileWidth; tX++) {
+                        subregion.setRGB(tX, tY, texture.getRGB(x * tileWidth + tX, y * tileHeight + tY));
+                    }
+                }
+                output.add(new TextureTile(subregion, name, y * nX + x));
+            }
+        }
+        return output;
+    }
+
+    public TextureTile(BufferedImage texture, String textureName) {
+        this(texture, textureName, 0);
+    }
+
+    private TextureTile(BufferedImage texture, String textureName, int textureFrame) {
         this.texture = texture;
         this.textureName = textureName;
         this.textureFrame = textureFrame;

@@ -2,6 +2,19 @@
 
 Progress blog: https://falsepattern.moe/chromabeam/blog.html
 
+Warning! You have to play the demo by starting it with a terminal, because input feedback
+is text-based with not GUI response!.
+
+Controls:
+- R - rotate component clockwise
+- Shift+R - rotate component counter-clockwise
+- F - flip component(mirror)
+- 0,1,2,3,4,5 - Select components
+- Left click - Place component / Interact (You can click a gate to invert it's switch behaviour)
+- Right click - Delete component
+
+!!!No save/load, camera movement or zooming is implemented in the demo!!!
+
 Feature progress tracker:
 - [x] Basic world renderer
 - [x] Component System
@@ -13,9 +26,9 @@ Feature progress tracker:
   - [x] Analog lasers
 - [x] Laser rendering
   - [x] line-based renderer with deferred shaders for glow effect.
-- [ ] Basic input system
-  - [ ] Mouse&Keyboard interaction with world
-- [ ] (Temporary test) Hardcoded primitive components
+- [x] Basic input system
+  - [x] Mouse&Keyboard interaction with world
+- [x] (Temporary test) Hardcoded primitive components
   - Hardcode the most primitive components for a proof-of-functionality release: Emitter, Mirror, Gate
 - [ ] User Interface
   - [ ] Text renderer

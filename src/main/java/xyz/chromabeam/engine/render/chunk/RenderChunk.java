@@ -1,9 +1,12 @@
 package xyz.chromabeam.engine.render.chunk;
 
+import org.lwjgl.system.MemoryUtil;
+import xyz.chromabeam.beam.Direction;
 import xyz.chromabeam.engine.render.VertexBuffer;
 import xyz.chromabeam.engine.render.texture.TextureRegionI;
 import xyz.chromabeam.util.Destroyable;
 
+import java.nio.FloatBuffer;
 import java.util.Arrays;
 
 import static org.lwjgl.opengl.GL33C.*;
@@ -30,6 +33,10 @@ public class RenderChunk implements Destroyable {
     public static final int VERTICES_PER_QUAD = TRIANGLES_PER_QUAD * VERTICES_PER_TRIANGLE;
 
     public static final int FLOATS_PER_QUAD = FLOATS_PER_VERTEX * VERTICES_PER_QUAD;
+    private static final long BYTES_PER_QUAD = FLOATS_PER_QUAD * 4;
+
+    private static final long P_ZERO_BUF = MemoryUtil.nmemCalloc(BYTES_PER_QUAD, 1);
+
 
     public int x = 0;
     public int y = 0;
@@ -37,25 +44,65 @@ public class RenderChunk implements Destroyable {
     private final VertexBuffer vertexBuffer;
 
     private final float[] BUF = new float[FLOATS_PER_QUAD];
-    public void set(int x, int y, TextureRegionI texture) {
+    public void set(int x, int y, Direction rotation, boolean flipped, TextureRegionI texture) {
+        if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
+            throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
+        } else if (texture == null) {
+            MemoryUtil.memCopy(P_ZERO_BUF, vertexBuffer.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
+        } else {
+            float u0 = texture.u0();
+            float v0 = flipped ? texture.v1() : texture.v0();
+            float u1 = texture.u1();
+            float v1 = flipped ? texture.v0() : texture.v1();
+            BUF[ 0] = x    ; BUF[ 1] = y    ;
+            BUF[ 4] = x    ; BUF[ 5] = y + 1;
+            BUF[ 8] = x + 1; BUF[ 9] = y + 1;
+            BUF[12] = x    ; BUF[13] = y    ;
+            BUF[16] = x + 1; BUF[17] = y + 1;
+            BUF[20] = x + 1; BUF[21] = y    ;
+            switch(rotation) {
+                case RIGHT -> {
+                    BUF[ 2] = u0   ; BUF[ 3] = v0   ;
+                    BUF[14] = u0   ; BUF[15] = v0   ;
+                    BUF[ 6] = u0   ; BUF[ 7] = v1   ;
+                    BUF[22] = u1   ; BUF[23] = v0   ;
+                    BUF[10] = u1   ; BUF[11] = v1   ;
+                    BUF[18] = u1   ; BUF[19] = v1   ;
+                }
+                case DOWN -> {
+                    BUF[ 2] = u0   ; BUF[ 3] = v1   ;
+                    BUF[14] = u0   ; BUF[15] = v1   ;
+                    BUF[ 6] = u1   ; BUF[ 7] = v1   ;
+                    BUF[22] = u0   ; BUF[23] = v0   ;
+                    BUF[10] = u1   ; BUF[11] = v0   ;
+                    BUF[18] = u1   ; BUF[19] = v0   ;
+                }
+                case LEFT -> {
+                    BUF[ 2] = u1   ; BUF[ 3] = v1   ;
+                    BUF[14] = u1   ; BUF[15] = v1   ;
+                    BUF[ 6] = u1   ; BUF[ 7] = v0   ;
+                    BUF[22] = u0   ; BUF[23] = v1   ;
+                    BUF[10] = u0   ; BUF[11] = v0   ;
+                    BUF[18] = u0   ; BUF[19] = v0   ;
+                }
+                case UP -> {
+                    BUF[ 2] = u1   ; BUF[ 3] = v0   ;
+                    BUF[14] = u1   ; BUF[15] = v0   ;
+                    BUF[ 6] = u0   ; BUF[ 7] = v0   ;
+                    BUF[22] = u1   ; BUF[23] = v1   ;
+                    BUF[10] = u0   ; BUF[11] = v1   ;
+                    BUF[18] = u0   ; BUF[19] = v1   ;
+                }
+            }
+        }
+        vertexBuffer.getBufferForWriting().put((y * edgeLength + x) * FLOATS_PER_QUAD, BUF);
+    }
+
+    public void unset(int x, int y) {
         if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
             throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
         }
-        if (texture != null) {
-            float u0 = texture.u0();
-            float v0 = texture.v0();
-            float u1 = texture.u1();
-            float v1 = texture.v1();
-            BUF[ 0] = x    ; BUF[ 1] = y    ; BUF[ 2] = u0; BUF[ 3] = v0;
-            BUF[ 4] = x    ; BUF[ 5] = y + 1; BUF[ 6] = u0; BUF[ 7] = v1;
-            BUF[ 8] = x + 1; BUF[ 9] = y + 1; BUF[10] = u1; BUF[11] = v1;
-            BUF[12] = x    ; BUF[13] = y    ; BUF[14] = u0; BUF[15] = v0;
-            BUF[16] = x + 1; BUF[17] = y + 1; BUF[18] = u1; BUF[19] = v1;
-            BUF[20] = x + 1; BUF[21] = y    ; BUF[22] = u1; BUF[23] = v0;
-        } else {
-            Arrays.fill(BUF, 0);
-        }
-        vertexBuffer.getBufferForWriting().put((y * edgeLength + x) * FLOATS_PER_QUAD, BUF);
+        MemoryUtil.memCopy(P_ZERO_BUF, vertexBuffer.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
     }
 
     private final ChunkRenderer parent;

@@ -23,6 +23,7 @@ public class Camera {
         viewport[1] = y;
         viewport[2] = w;
         viewport[3] = h;
+        dirty = true;
     }
 
     public void setPosition(Vector2fc position) {
@@ -61,6 +62,6 @@ public class Camera {
 
     private final int[] viewport = new int[4];
     public Vector2f screenToWorldSpace(Vector2fc position, Vector2f destination) {
-        return getProjectionMatrix().unproject(position.x(), position.y(), viewport, destination);
+        return getProjectionMatrix().unproject(position.x(), position.y(), viewport, destination).mul(1, -1);
     }
 }

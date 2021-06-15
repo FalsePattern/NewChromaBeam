@@ -11,11 +11,9 @@
     <properties>
         <java.version>16</java.version>
         <project.encoding>UTF-8</project.encoding>
-        <project.main>xyz.chromabeam.Main</project.main>
-        <lombok.version>1.18.18</lombok.version>
+        <project.main>xyz.chromabeam.demo.Demo</project.main>
         <lwjgl.version>3.2.3</lwjgl.version>
         <joml.version>1.10.1</joml.version>
-        <manifold.version>2021.1.10</manifold.version>
     </properties>
 
     <profiles>
@@ -51,14 +49,6 @@
                     <target>${java.version}</target>
                     <release>${java.version}</release>
                     <encoding>${project.encoding}</encoding>
-                    <compilerArgs>
-                        <arg>-Xplugin:Manifold</arg>
-                    </compilerArgs>
-                    <annotationProcessorPaths>
-                        <path><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version></path>
-                        <path><groupId>systems.manifold</groupId><artifactId>manifold</artifactId><version>${manifold.version}</version></path>
-                        <path><groupId>systems.manifold</groupId><artifactId>manifold-ext</artifactId><version>${manifold.version}</version></path>
-                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>
@@ -116,9 +106,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency><groupId>org.projectlombok</groupId><artifactId>lombok</artifactId><version>${lombok.version}</version><scope>provided</scope></dependency>
-        <dependency><groupId>systems.manifold</groupId><artifactId>manifold-rt</artifactId><version>${manifold.version}</version></dependency>
-        <dependency><groupId>systems.manifold</groupId><artifactId>manifold-ext-rt</artifactId><version>${manifold.version}</version></dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>

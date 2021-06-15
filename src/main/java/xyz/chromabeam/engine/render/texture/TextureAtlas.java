@@ -5,10 +5,8 @@ import xyz.chromabeam.engine.Constants;
 import java.awt.AlphaComposite;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
+import java.lang.ref.WeakReference;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
@@ -20,18 +18,20 @@ import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
  */
 public class TextureAtlas extends Texture {
 
-    private final HashMap<String, List<TextureRegion>> textures;
-    public TextureAtlas(List<TextureTile> tiles) {
+    private final HashMap<String, TextureRegion[]> textures;
+    public TextureAtlas(ArrayList<TextureTile> tiles) {
         super(generateAtlasImage(tiles), true);
         textures = new HashMap<>();
+        var tmpTex = new HashMap<String, List<TextureRegion>>();
         for (var tile: tiles) {
-            var frameList = textures.computeIfAbsent(tile.textureName, (ignored) -> new ArrayList<>());
+            var frameList = tmpTex.computeIfAbsent(tile.textureName, (ignored) -> new ArrayList<>());
             var geom = tile.textureGeometry;
             while (frameList.size() <= tile.textureFrame) {
                 frameList.add(null);
             }
             frameList.set(tile.textureFrame, new TextureRegion(this, geom.x, geom.y, geom.width, geom.height));
         }
+        tmpTex.forEach((key, value) -> textures.put(key, value.toArray(TextureRegion[]::new)));
     }
 
     /**
@@ -40,9 +40,24 @@ public class TextureAtlas extends Texture {
      * @param frame The frame of the animation inside the texture to retrieve. If it's not animated, this should be 0.
      * @return The requested texture frame, or null, if it doesn't exist.
      */
-    public TextureRegion getTexture(String name, int frame) {
+    public TextureRegion getFrame(String name, int frame) {
+        if (frame < 0) return null;
         var frames = textures.getOrDefault(name, null);
-        return frames != null && frames.size() >= frame ? frames.get(frame) : null;
+        return frames != null && frames.length > frame ? frames[frame] : null;
+    }
+
+    public int getFrameCount(String name) {
+        var frames = textures.getOrDefault(name, null);
+        if (frames == null) return 0;
+        return frames.length;
+    }
+
+    public boolean hasTexture(String name) {
+        return Objects.nonNull(textures.getOrDefault(name, null));
+    }
+
+    public TextureRegion[] get(String name) {
+        return textures.getOrDefault(name, null);
     }
 
     //Helper function for putting packed tiles into a texture atlas image.

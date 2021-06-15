@@ -1,12 +1,14 @@
 package xyz.chromabeam.engine.render.texture;
 
 import xyz.chromabeam.engine.Bindable;
+import xyz.chromabeam.engine.render.FrameBuffer;
 import xyz.chromabeam.util.Destroyable;
 import org.lwjgl.system.MemoryUtil;
 
 import static org.lwjgl.opengl.GL33C.*;
 
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 /**
  * The simplest wrapper object for OpenGL textures. This is a 1 to 1 size region that maps to the entire input texture.
@@ -50,8 +52,8 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         }
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -119,5 +121,10 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
     @Override
     public int height() {
         return h;
+    }
+
+    public int address(FrameBuffer.Friend friend) {
+        Objects.requireNonNull(friend);
+        return address;
     }
 }

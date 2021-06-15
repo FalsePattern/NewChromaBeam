@@ -1,5 +1,6 @@
 package xyz.chromabeam.engine.render.beam;
 
+import org.joml.Vector4f;
 import xyz.chromabeam.engine.render.Camera;
 import xyz.chromabeam.engine.render.FrameBuffer;
 import xyz.chromabeam.engine.render.Shader;
@@ -11,6 +12,8 @@ import xyz.chromabeam.util.Destroyable;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL33C;
 
+import java.io.IOException;
+
 public class DeferredRenderer extends Renderer implements Destroyable, WindowResizeCallback {
     private final VertexBuffer buffer;
     private final Shader shader;
@@ -18,9 +21,15 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
     private final FrameBuffer tempBuffer;
     private final WorldRenderer subRenderer;
     private final int horizontalBlurUniform;
+
+    private final Vector4f clearColor = new Vector4f(0,0,0,1);
     public DeferredRenderer(int width, int height, WorldRenderer subRenderer, String deferredShader) {
         this.subRenderer = subRenderer;
-        shader = Shader.fromShaderResource(deferredShader, "horizontal");
+        try {
+            shader = Shader.fromShaderResource(deferredShader, "horizontal");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         horizontalBlurUniform = shader.getUniforms()[0];
         buffer = new VertexBuffer(4, 4, 2);
         buffer.getBufferForWriting().put(0, new float[]{
@@ -38,15 +47,20 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
         subRenderer.setCamera(camera);
     }
 
+    public void clearColor(float r, float g, float b, float a) {
+        clearColor.set(r, g, b, a);
+    }
+
     public void render() {
         backBuffer.bind();
-        Renderer.clear(0, 0, 0, 0);
+        Renderer.clear(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
         subRenderer.render();
 
         shader.bind();
         buffer.bind();
         backBuffer.getTexture().bind();
         tempBuffer.bind();
+        Renderer.clear(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
         GL33C.glUniform1i(horizontalBlurUniform, 1);
         GL33C.glDrawArrays(GL11C.GL_TRIANGLE_FAN, 0, 4);
         tempBuffer.unbind();
