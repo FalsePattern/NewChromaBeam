@@ -6,7 +6,7 @@
 
     <groupId>xyz.chromabeam</groupId>
     <artifactId>chromabeam</artifactId>
-    <version>0.0.1-dev</version>
+    <version>0.0.1</version>
 
     <properties>
         <java.version>16</java.version>
@@ -72,6 +72,7 @@
                         </goals>
                         <configuration>
                             <outputDirectory>${project.build.directory}/libs</outputDirectory>
+                            <includeScope>runtime</includeScope>
                         </configuration>
                     </execution>
                 </executions>

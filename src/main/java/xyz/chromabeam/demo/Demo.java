@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Demo {
     public static void main(String[] args) {
         final var closed = new AtomicBoolean(false);
-        final var window = new Window(800, 600, "ChromaBeam Dev demo 0.1", () -> closed.set(true));
+        final var window = new Window(800, 600, "ChromaBeam Dev demo 0.0.1", () -> closed.set(true));
         final var atlas = new TextureAtlas(getTextures());
 
         final var componentRenderer = new ChunkRenderer(WorldChunk.CHUNK_SIDE_LENGTH);
