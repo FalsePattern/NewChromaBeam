@@ -8,6 +8,7 @@ import org.lwjgl.system.MemoryUtil;
 import static org.lwjgl.opengl.GL33C.*;
 
 import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
@@ -18,7 +19,15 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
     private final int address;
     private final int w;
     private final int h;
+    private final ByteBuffer dynamicBuffer;
+    private final boolean dynamic;
+
     public Texture(BufferedImage image, boolean mipMap) {
+        this(image, mipMap, false);
+    }
+
+    public Texture(BufferedImage image, boolean mipMap, boolean dynamic) {
+        this.dynamic = dynamic;
         address = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, address);
         var buf = MemoryUtil.memAlloc(image.getWidth() * image.getHeight() * 4);
@@ -37,11 +46,39 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
             }
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
         } finally {
-            MemoryUtil.memFree(buf);
+            if (dynamic) {
+                dynamicBuffer = buf;
+            } else {
+                dynamicBuffer = null;
+                MemoryUtil.memFree(buf);
+            }
         }
         configureTexture(mipMap);
         this.w = image.getWidth();
         this.h = image.getHeight();
+    }
+
+    public Texture(int width, int height) {
+        this(width, height, false);
+    }
+
+    public Texture(int width, int height, boolean hdr) {
+        this(width, height, hdr, false);
+    }
+
+    public Texture(int width, int height, boolean hdr, boolean dynamic) {
+        this.dynamic = dynamic;
+        address = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, address);
+        glTexImage2D(GL_TEXTURE_2D, 0,hdr ? GL_RGBA32F : GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        configureTexture(false);
+        this.w = width;
+        this.h = height;
+        if (dynamic) {
+            dynamicBuffer = MemoryUtil.memAlloc(w * h * 4);
+        } else {
+            dynamicBuffer = null;
+        }
     }
 
     private void configureTexture(boolean mipMap) {
@@ -57,19 +94,6 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    public Texture(int width, int height) {
-        this(width, height, false);
-    }
-
-    public Texture(int width, int height, boolean hdr) {
-        address = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, address);
-        glTexImage2D(GL_TEXTURE_2D, 0,hdr ? GL_RGBA32F : GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-        configureTexture(false);
-        this.w = width;
-        this.h = height;
-    }
-
     public void bind() {
         glBindTexture(GL_TEXTURE_2D, address);
     }
@@ -81,6 +105,9 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
     @Override
     public void destroy() {
         glDeleteTextures(address);
+        if (dynamic) {
+            MemoryUtil.memFree(dynamicBuffer);
+        }
     }
 
     @Override

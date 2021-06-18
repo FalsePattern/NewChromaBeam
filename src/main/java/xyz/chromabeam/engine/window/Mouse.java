@@ -15,24 +15,51 @@ public class Mouse {
             WheelUp, WheelDown,
             WheelLeft, WheelRight,
             Move,
-            Enter, Leave
-        }
-        public final Type type;
-        public final boolean leftIsPressed;
-        public final boolean middleIsPressed;
-        public final boolean rightIsPressed;
-        public final int x;
-        public final int y;
+            Enter, Leave;
 
-        public Vector2i getPos() {
-            return new Vector2i(x, y);
+            private static final Type[] values = Type.values();
+            private byte toMask() {
+                return (byte) (this.ordinal() << 0x04);
+            }
+
+            private static Type fromMask(byte mask) {
+                return values[(mask & 0x00f0) >>> 4];
+            }
+        }
+
+        private final byte mask;
+        private final int x;
+        private final int y;
+
+        public int x() {
+            return x;
+        }
+        public int y() {
+            return y;
+        }
+
+        public boolean isLeftPressed() {
+            return (mask & MASK_LEFT_BUTTON) == MASK_LEFT_BUTTON;
+        }
+        public boolean isRightPressed() {
+            return (mask & MASK_RIGHT_BUTTON) == MASK_RIGHT_BUTTON;
+        }
+        public boolean isMiddlePressed() {
+            return (mask & MASK_MIDDLE_BUTTON) == MASK_MIDDLE_BUTTON;
+        }
+        public boolean isInWindow() {
+            return (mask & MASK_IN_WINDOW) == MASK_IN_WINDOW;
+        }
+        public Type type() {
+            return Type.fromMask(mask);
+        }
+
+        public Vector2i getPos(Vector2i buffer) {
+            return buffer.set(x, y);
         }
 
         private Event(Type type, Mouse parent) {
-            this.type = type;
-            leftIsPressed = parent.leftIsPressed;
-            middleIsPressed = parent.middleIsPressed;
-            rightIsPressed = parent.rightIsPressed;
+            mask = (byte) (type.toMask() | parent.mask);
             x = parent.x;
             y = parent.y;
         }
@@ -55,16 +82,16 @@ public class Mouse {
         return y;
     }
     public boolean isInWindow() {
-        return isInWindow;
+        return (mask & MASK_IN_WINDOW) == MASK_IN_WINDOW;
     }
     public boolean leftIsPressed() {
-        return leftIsPressed;
+        return (mask & MASK_LEFT_BUTTON) == MASK_LEFT_BUTTON;
     }
     public boolean middleIsPressed() {
-        return middleIsPressed;
+        return (mask & MASK_MIDDLE_BUTTON) == MASK_MIDDLE_BUTTON;
     }
     public boolean rightIsPressed() {
-        return rightIsPressed;
+        return (mask & MASK_RIGHT_BUTTON) == MASK_RIGHT_BUTTON;
     }
     public Optional<Event> read() {
         return Optional.ofNullable(buffer.poll());
@@ -82,35 +109,35 @@ public class Mouse {
         postEvent(Event.Type.Move);
     }
     void onMouseLeave() {
-        isInWindow = false;
+        mask &= ~MASK_IN_WINDOW;
         postEvent(Event.Type.Leave);
     }
     void onMouseEnter() {
-        isInWindow = true;
+        mask |= MASK_IN_WINDOW;
         postEvent(Event.Type.Enter);
     }
     void onLeftPressed() {
-        leftIsPressed = true;
+        mask |= MASK_LEFT_BUTTON;
         postEvent(Event.Type.LPress);
     }
     void onLeftReleased() {
-        leftIsPressed = false;
+        mask &= ~MASK_LEFT_BUTTON;
         postEvent(Event.Type.LRelease);
     }
     void onRightPressed() {
-        rightIsPressed = true;
+        mask |= MASK_RIGHT_BUTTON;
         postEvent(Event.Type.RPress);
     }
     void onRightReleased() {
-        rightIsPressed = false;
+        mask &= ~MASK_RIGHT_BUTTON;
         postEvent(Event.Type.RRelease);
     }
     void onMiddlePressed() {
-        middleIsPressed = true;
+        mask |= MASK_MIDDLE_BUTTON;
         postEvent(Event.Type.MPress);
     }
     void onMiddleReleased() {
-        middleIsPressed = false;
+        mask &= ~MASK_MIDDLE_BUTTON;
         postEvent(Event.Type.MRelease);
     }
     void onWheelDelta(double dx, double dy) {
@@ -135,7 +162,7 @@ public class Mouse {
     }
 
     boolean anyPressed() {
-        return leftIsPressed || middleIsPressed || rightIsPressed;
+        return mask != 0;
     }
 
     private void trimBuffer() {
@@ -149,14 +176,15 @@ public class Mouse {
         trimBuffer();
     }
 
+    private static final byte MASK_LEFT_BUTTON = 0x01;
+    private static final byte MASK_RIGHT_BUTTON = 0x02;
+    private static final byte MASK_MIDDLE_BUTTON = 0x04;
+    private static final byte MASK_IN_WINDOW = 0x08;
 
     private static final int bufferSize = 64;
     private int x = 0;
     private int y = 0;
-    private boolean leftIsPressed = false;
-    private boolean middleIsPressed = false;
-    private boolean rightIsPressed = false;
-    private boolean isInWindow = false;
+    private byte mask = 0x00;
     private final Queue<Event> buffer = new LinkedBlockingQueue<>();
     private double wheelDeltaCarryX = 0;
     private double wheelDeltaCarryY = 0;

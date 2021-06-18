@@ -5,7 +5,7 @@ package xyz.chromabeam.engine;
  */
 public interface Bindable {
     /**
-     * Binds the external content contained an object.
+     * Binds the external content contained in the object.
      */
     void bind();
 
@@ -13,14 +13,4 @@ public interface Bindable {
      * Unbinds the external content currently bound.
      */
     void unbind();
-
-    static void runWith(Runnable runnable, Bindable... bindables) {
-        for (var bindable: bindables) {
-            bindable.bind();
-        }
-        runnable.run();
-        for (var bindable: bindables) {
-            bindable.unbind();
-        }
-    }
 }
