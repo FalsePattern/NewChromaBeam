@@ -1,7 +1,6 @@
 package xyz.chromabeam.component;
 
 import xyz.chromabeam.beam.Direction;
-import xyz.chromabeam.world.BeamEmitter;
 
 /**
  * Beam consumers can detect incoming beams, however, they cannot emit beams by themselves.

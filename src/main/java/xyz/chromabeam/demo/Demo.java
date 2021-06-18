@@ -16,7 +16,6 @@ import xyz.chromabeam.engine.render.texture.TextureAtlas;
 import xyz.chromabeam.engine.render.texture.TextureTile;
 import xyz.chromabeam.engine.render.world.Renderer;
 import xyz.chromabeam.engine.window.Window;
-import xyz.chromabeam.ui.RectI2D;
 import xyz.chromabeam.ui.ScreenSpaceUIDrawer;
 import xyz.chromabeam.util.ResourceUtil;
 import xyz.chromabeam.world.World2D;
@@ -26,7 +25,6 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Demo {

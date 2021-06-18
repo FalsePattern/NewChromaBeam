@@ -133,7 +133,7 @@ public class Window implements Destroyable {
                 keyboard.onKeyPressed(key);
                 break;
             case GLFW_REPEAT:
-                if (keyboard.getAutorepeat()) {
+                if (keyboard.getAutoRepeat()) {
                     keyboard.onKeyPressed(key);
                 }
         }

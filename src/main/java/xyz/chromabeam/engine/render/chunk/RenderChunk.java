@@ -6,9 +6,6 @@ import xyz.chromabeam.engine.render.VertexBuffer;
 import xyz.chromabeam.engine.render.texture.TextureRegionI;
 import xyz.chromabeam.util.Destroyable;
 
-import java.nio.FloatBuffer;
-import java.util.Arrays;
-
 import static org.lwjgl.opengl.GL33C.*;
 
 /**

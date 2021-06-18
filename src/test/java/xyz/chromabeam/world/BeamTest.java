@@ -2,11 +2,8 @@ package xyz.chromabeam.world;
 
 import xyz.chromabeam.TestUtil;
 import xyz.chromabeam.beam.Direction;
-import xyz.chromabeam.component.BeamConsumer;
-import xyz.chromabeam.component.BeamProducer;
 import xyz.chromabeam.component.Component;
 import xyz.chromabeam.engine.render.texture.TextureAtlas;
-import xyz.chromabeam.engine.render.texture.TextureRegionI;
 import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 

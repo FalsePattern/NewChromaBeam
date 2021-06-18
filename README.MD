@@ -10,7 +10,7 @@ Controls:
 - Shift+R - rotate component counter-clockwise
 - F - flip component(mirror)
 - 0,1,2,3,4,5 - Select components
-- Left click - Place component / Interact (You can click a gate to invert it's switch behaviour)
+- Left click - Place component / Interact (You can click a gate to invert its switch behaviour)
 - Right click - Delete component
 
 !!!No save/load, camera movement or zooming is implemented in the demo!!!

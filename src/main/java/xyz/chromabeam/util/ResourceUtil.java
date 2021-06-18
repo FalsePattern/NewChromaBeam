@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.MissingResourceException;
 
 /**
  * Tools for reading resource files from the jar. This is only used where the data is known to exists, so Lombok is

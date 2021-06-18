@@ -132,16 +132,14 @@ public class UIRectangle {
      * @param x The relative x position of the mouse compared to the hitBox of the component.
      * @param y The relative y position of the mouse compared to the hitBox of the component.
      */
-    public void mouseEnter(int x, int y) {
-
-    }
+    public void mouseEnter(int x, int y) {}
 
     /**
      * Called when the mouse stops hovering over the ui component. The default implementation does nothing.
      * @param x The relative x position of the mouse compared to the hitBox of the component.
      * @param y The relative y position of the mouse compared to the hitBox of the component.
      */
-    public void mouseLeave(int x, int y){}
+    public void mouseLeave(int x, int y) {}
 
     /**
      * Called when the mouse changes position over the ui component. The default implementation does nothing.
@@ -155,7 +153,7 @@ public class UIRectangle {
      * @param x The relative x position of the mouse compared to the hitBox of the component.
      * @param y The relative y position of the mouse compared to the hitBox of the component.
      */
-    public void mousePress(int x, int y){}
+    public void mousePress(int x, int y) {}
 
     /**
      * Called when the mouse finishes clicking the ui component. The default implementation does nothing.

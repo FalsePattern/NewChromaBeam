@@ -5,7 +5,6 @@ import xyz.chromabeam.engine.Constants;
 import java.awt.AlphaComposite;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 

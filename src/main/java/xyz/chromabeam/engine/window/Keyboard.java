@@ -75,11 +75,11 @@ public class Keyboard {
         flushChar();
     }
 
-    void setAutorepeat(boolean enableAutoRepeat) {
+    void setAutoRepeat(boolean enableAutoRepeat) {
         autoRepeat = enableAutoRepeat;
     }
 
-    boolean getAutorepeat() {
+    boolean getAutoRepeat() {
         return autoRepeat;
     }
 

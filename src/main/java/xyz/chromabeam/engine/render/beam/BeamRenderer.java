@@ -3,7 +3,6 @@ package xyz.chromabeam.engine.render.beam;
 import org.joml.Vector2i;
 import xyz.chromabeam.engine.render.world.WorldRenderer;
 import xyz.chromabeam.engine.render.VertexBuffer;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL33C;
