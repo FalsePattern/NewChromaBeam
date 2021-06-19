@@ -19,7 +19,7 @@ public class ChunkRenderer extends WorldRenderer implements Supplier<RenderChunk
     private final List<RenderChunk> inactiveRenderChunks = new ArrayList<>();
     private final int edgeSize;
     public ChunkRenderer(int edgeSize) {
-        super("tile", "chunk");
+        super("tile", "uv", "chunk");
         this.edgeSize = edgeSize;
         chunkUniform = childUniforms[0];
     }

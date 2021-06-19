@@ -1,9 +1,11 @@
 package xyz.chromabeam.demo;
 
 import org.lwjgl.opengl.GL33C;
+import org.xml.sax.SAXException;
 import xyz.chromabeam.engine.InputDispatcher;
 import xyz.chromabeam.ui.Button;
 import xyz.chromabeam.ui.UIManager;
+import xyz.chromabeam.ui.font.Font;
 import xyz.chromabeam.world.InteractionManager;
 import xyz.chromabeam.component.Component;
 import xyz.chromabeam.demo.components.basic.*;
@@ -21,24 +23,30 @@ import xyz.chromabeam.util.ResourceUtil;
 import xyz.chromabeam.world.World2D;
 import xyz.chromabeam.world.WorldChunk;
 
+import javax.imageio.ImageIO;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Color;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Demo {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
         final var closed = new AtomicBoolean(false);
         final var window = new Window(800, 600, "ChromaBeam Dev demo 0.0.1", () -> closed.set(true));
         final var atlas = new TextureAtlas(getTextures());
 
         final var componentRenderer = new ChunkRenderer(WorldChunk.CHUNK_SIDE_LENGTH);
         final var beamRenderer = new BeamRenderer();
-        final var blurRenderer = new DeferredRenderer(window.getWidth(), window.getHeight(), beamRenderer, "beamQuad");
-        final var uiRenderer = new ScreenSpaceUIDrawer(window.getWidth(), window.getHeight(), Shader.fromShaderResource("ui"));
+        final var blurRenderer = new DeferredRenderer(window.getWidth(), window.getHeight(), beamRenderer, "pos2uv", "beamQuad");
+        final var uiRenderer = new ScreenSpaceUIDrawer(window.getWidth(), window.getHeight(), Shader.fromShaderResource("ui", "color4"), Shader.fromShaderResource("pos2uv", "uv"));
         blurRenderer.clearColor(0.2f, 0.2f, 0.2f, 1.0f);
-
+        uiRenderer.setFont(Font.loadFromResource("Roboto32"));
 
         final var camera = new Camera();
         componentRenderer.setCamera(camera);
@@ -82,6 +90,7 @@ public class Demo {
             componentRenderer.render();
             atlas.unbind();
             uiMan.draw(uiRenderer);
+            uiRenderer.drawText(200, 200, "It's text!");
             uiRenderer.render();
             window.swap();
         }

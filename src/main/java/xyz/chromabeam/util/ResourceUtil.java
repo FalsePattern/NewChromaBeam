@@ -29,7 +29,7 @@ public final class ResourceUtil {
     public static InputStream getStreamFromResource(String path) throws IOException {
         var stream = ResourceUtil.class.getResourceAsStream(path);
         if (stream == null) {
-            throw new IOException("Could not find texture at " + path);
+            throw new IOException("Could not find resource at " + path);
         }
         return stream;
     }

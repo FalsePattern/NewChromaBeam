@@ -17,12 +17,12 @@ public abstract class WorldRenderer extends Renderer implements Destroyable {
 
     protected final int[] childUniforms;
 
-    public WorldRenderer(String shaderName, String... customUniforms) {
+    public WorldRenderer(String vertexShaderName, String fragmentShaderName, String... customUniforms) {
         String[] uniStrings = new String[customUniforms.length + 1];
         uniStrings[0] = "projectionMatrix";
         System.arraycopy(customUniforms, 0, uniStrings, 1, customUniforms.length);
         try {
-            shader = Shader.fromShaderResource(shaderName, uniStrings);
+            shader = Shader.fromShaderResource(vertexShaderName, fragmentShaderName, uniStrings);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

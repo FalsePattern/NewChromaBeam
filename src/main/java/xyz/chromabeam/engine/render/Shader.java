@@ -16,8 +16,8 @@ public class Shader implements Destroyable, Bindable {
     private final int program;
     private final int[] uniforms;
 
-    public static Shader fromShaderResource(String shaderName, String... uniforms) throws IOException {
-        return new Shader(ResourceUtil.readShaderFromResource(shaderName + ".vert"), ResourceUtil.readShaderFromResource(shaderName + ".frag"), uniforms);
+    public static Shader fromShaderResource(String vertexName, String fragmentName, String... uniforms) throws IOException {
+        return new Shader(ResourceUtil.readShaderFromResource(vertexName + ".vert"), ResourceUtil.readShaderFromResource(fragmentName + ".frag"), uniforms);
     }
 
     public Shader(String vertexSource, String fragmentSource, String... uniforms) {

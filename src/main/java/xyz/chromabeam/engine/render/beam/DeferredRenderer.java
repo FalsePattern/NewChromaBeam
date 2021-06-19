@@ -23,20 +23,20 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
     private final int horizontalBlurUniform;
 
     private final Vector4f clearColor = new Vector4f(0,0,0,1);
-    public DeferredRenderer(int width, int height, WorldRenderer subRenderer, String deferredShader) {
+    public DeferredRenderer(int width, int height, WorldRenderer subRenderer, String deferredVertexShader, String deferredFragmentShader) {
         this.subRenderer = subRenderer;
         try {
-            shader = Shader.fromShaderResource(deferredShader, "horizontal");
+            shader = Shader.fromShaderResource(deferredVertexShader, deferredFragmentShader, "horizontal");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         horizontalBlurUniform = shader.getUniforms()[0];
-        buffer = new VertexBuffer(4, 4, 2);
+        buffer = new VertexBuffer(4, 2, 2);
         buffer.getBufferForWriting().put(0, new float[]{
-                -1, 1 , 0, 1, 0, 1,
-                -1, -1, 0, 1, 0, 0,
-                1 , -1, 0, 1, 1, 0,
-                1 , 1 , 0, 1, 1, 1
+                -1, 1 , 0, 1,
+                -1, -1, 0, 0,
+                1 , -1, 1, 0,
+                1 , 1 , 1, 1
         });
         backBuffer = new FrameBuffer(width, height);
         tempBuffer = new FrameBuffer(width, height);

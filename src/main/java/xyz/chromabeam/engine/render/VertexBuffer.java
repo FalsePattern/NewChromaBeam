@@ -15,6 +15,9 @@ public class VertexBuffer implements Bindable, Destroyable {
     private final FloatBuffer buffer;
     private final long pBuffer;
     private boolean changed = false;
+    public final int floatsPerVertex;
+    public final int vertexCount;
+    public final int floatsInBuffer;
 
     public VertexBuffer(int vertices, int... attributes) {
         int attributeCount = attributes.length;
@@ -22,6 +25,9 @@ public class VertexBuffer implements Bindable, Destroyable {
         for (var attrib: attributes) {
             floatsPerVertex += attrib;
         }
+        this.floatsPerVertex = floatsPerVertex;
+        vertexCount = vertices;
+        floatsInBuffer = vertices * floatsPerVertex;
         vao = glGenVertexArrays();
         glBindVertexArray(vao);
         vbo = glGenBuffers();

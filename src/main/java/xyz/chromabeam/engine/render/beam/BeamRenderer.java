@@ -27,7 +27,7 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
     }
 
     public BeamRenderer(int beamsPerDrawCall) {
-        super("beam");
+        super("beam", "color4");
         this.capacity = this.beamsPerDraw = beamsPerDrawCall;
         vb = new VertexBuffer(beamsPerDrawCall * VERTICES_PER_BEAM, 2, 3);
         growableBuffer = MemoryUtil.memAllocFloat(beamsPerDrawCall);
