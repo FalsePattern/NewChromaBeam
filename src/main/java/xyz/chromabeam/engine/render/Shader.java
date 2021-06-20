@@ -24,7 +24,7 @@ public class Shader implements Destroyable, Bindable {
     public Shader(String vertexSource, String fragmentSource, String... uniforms) {
         int vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
         int fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
-        program = glCreateProgram();
+        program = BindManager.createProgram();
         glAttachShader(program, vertexShader);
         glAttachShader(program, fragmentShader);
         glLinkProgram(program);
@@ -60,15 +60,15 @@ public class Shader implements Destroyable, Bindable {
     }
 
     public void bind() {
-        BindManager.useProgram(program);
+        BindManager.bindShader(program);
     }
 
     public void unbind() {
-        BindManager.useProgram(0);
+        BindManager.unbindShader(program);
     }
 
     @Override
     public void destroy() {
-        glDeleteProgram(program);
+        BindManager.deleteProgram(program);
     }
 }

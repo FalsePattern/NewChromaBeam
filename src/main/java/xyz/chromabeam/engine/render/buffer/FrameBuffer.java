@@ -22,7 +22,7 @@ public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable 
     private Texture texture;
 
     public FrameBuffer(int width, int height) {
-        address = glGenFramebuffers();
+        address = BindManager.genFrameBuffers();
         windowResize(width, height);
     }
 
@@ -52,7 +52,7 @@ public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable 
     }
 
     public void unbind() {
-        BindManager.bindFrameBuffer(0);
+        BindManager.unbindFrameBuffer(address);
     }
 
     public Texture getTexture() {
@@ -64,6 +64,6 @@ public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable 
         if (texture != null) {
             texture.destroy();
         }
-        glDeleteFramebuffers(address);
+        BindManager.deleteFrameBuffers(address);
     }
 }

@@ -26,7 +26,7 @@ public class VertexArray implements Bindable, Destroyable {
         this.floatsPerVertex = floatsPerVertex;
         vertexCount = vertices;
         floatsInBuffer = vertices * floatsPerVertex;
-        vao = glGenVertexArrays();
+        vao = BindManager.genVertexArrays();
         BindManager.bindVertexArray(vao);
         vbo = new GpuBuffer(vertices * floatsPerVertex * 4, GL_ARRAY_BUFFER);
         int stride = floatsPerVertex * 4;
@@ -37,7 +37,7 @@ public class VertexArray implements Bindable, Destroyable {
             glEnableVertexAttribArray(i);
         }
         vbo.unbind();
-        BindManager.bindVertexArray(0);
+        BindManager.unbindVertexArray(vao);
     }
 
     public FloatBuffer getWriteBuffer() {
@@ -67,12 +67,12 @@ public class VertexArray implements Bindable, Destroyable {
 
     @Override
     public void unbind() {
-        BindManager.bindVertexArray(0);
+        BindManager.unbindVertexArray(vao);
     }
 
     @Override
     public void destroy() {
         vbo.destroy();
-        glDeleteVertexArrays(vao);
+        BindManager.deleteVertexArrays(vao);
     }
 }

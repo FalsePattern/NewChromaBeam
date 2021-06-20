@@ -67,4 +67,10 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
         }
         vb.unbind();
     }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        vb.destroy();
+    }
 }

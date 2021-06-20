@@ -12,16 +12,16 @@ import static org.lwjgl.opengl.GL33C.*;
 
 public class GpuBuffer implements Bindable, Destroyable {
     private final int pointer;
-    private final int bindPoint;
+    private final int target;
 
     private final ByteBuffer buffer;
     private final long pBuffer;
 
-    public GpuBuffer(int size, int bindPoint) {
-        this.bindPoint = bindPoint;
-        pointer = glGenBuffers();
+    public GpuBuffer(int size, int target) {
+        this.target = target;
+        pointer = BindManager.genBuffers(target);
         bind();
-        glBufferData(bindPoint, size, GL_DYNAMIC_DRAW);
+        glBufferData(target, size, GL_DYNAMIC_DRAW);
         buffer = MemoryUtil.memAlloc(size);
         pBuffer = MemoryUtil.memAddress(buffer);
     }
@@ -36,20 +36,20 @@ public class GpuBuffer implements Bindable, Destroyable {
 
     public void sync() {
         if (Global.DEBUG) {
-            int bound = BindManager.DEBUG_boundBuffer(bindPoint);
+            int bound = BindManager.DEBUG_boundBuffer(target);
             if (bound != pointer) throw new IllegalStateException("Tried to sync buffer while it wasn't bound!");
         }
-        glBufferSubData(bindPoint, 0, buffer);
+        glBufferSubData(target, 0, buffer);
     }
 
     @Override
     public void bind() {
-        BindManager.bindBuffer(bindPoint, pointer);
+        BindManager.bindBuffer(target, pointer);
     }
 
     @Override
     public void unbind() {
-        BindManager.bindBuffer(bindPoint, 0);
+        BindManager.unbindBuffer(target, pointer);
     }
 
     private boolean destroyed = false;
@@ -57,11 +57,7 @@ public class GpuBuffer implements Bindable, Destroyable {
     public void destroy() {
         if (destroyed) throw new IllegalStateException("Tried to destroy buffer twice!");
         destroyed = true;
-        glDeleteBuffers(pointer);
+        BindManager.deleteBuffers(target, pointer);
         MemoryUtil.memFree(buffer);
-        if (Global.DEBUG) {
-            int bound = BindManager.DEBUG_boundBuffer(bindPoint);
-            if (bound == pointer) throw new IllegalStateException("Destroyed bound buffer!");
-        }
     }
 }

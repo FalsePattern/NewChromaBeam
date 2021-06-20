@@ -9,8 +9,9 @@ import xyz.chromabeam.engine.render.buffer.VertexArray;
 import xyz.chromabeam.engine.render.world.Renderer;
 import xyz.chromabeam.engine.window.WindowResizeCallback;
 import xyz.chromabeam.ui.font.Font;
+import xyz.chromabeam.util.Destroyable;
 
-public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowResizeCallback {
+public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowResizeCallback, Destroyable {
     private static final int VERTEX_DIMENSIONS = 2;
     private static final int VERTEX_COLORS = 4;
     private static final int VERTEX_UV = 2;
@@ -168,5 +169,12 @@ public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowRes
     public void windowResize(int width, int height) {
         this.horizontalMultiplier = 2f / width;
         this.verticalMultiplier = -2f / height;
+    }
+
+
+    @Override
+    public void destroy() {
+        uiBuffer.destroy();
+        textBuffer.destroy();
     }
 }

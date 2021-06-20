@@ -2,6 +2,8 @@ package xyz.chromabeam.demo;
 
 import org.lwjgl.opengl.GL33C;
 import org.xml.sax.SAXException;
+import xyz.chromabeam.Global;
+import xyz.chromabeam.engine.BindManager;
 import xyz.chromabeam.engine.InputDispatcher;
 import xyz.chromabeam.ui.Button;
 import xyz.chromabeam.ui.UIManager;
@@ -44,9 +46,12 @@ public class Demo {
         final var componentRenderer = new ChunkRenderer(WorldChunk.CHUNK_SIDE_LENGTH);
         final var beamRenderer = new BeamRenderer();
         final var blurRenderer = new DeferredRenderer(window.getWidth(), window.getHeight(), beamRenderer, "pos2uv", "beamQuad");
-        final var uiRenderer = new ScreenSpaceUIDrawer(window.getWidth(), window.getHeight(), Shader.fromShaderResource("ui", "color4"), Shader.fromShaderResource("pos2uv", "uv"));
+        final var flatShader = Shader.fromShaderResource("ui", "color4");
+        final var fontShader = Shader.fromShaderResource("pos2uv", "uv");
+        final var uiRenderer = new ScreenSpaceUIDrawer(window.getWidth(), window.getHeight(), flatShader, fontShader);
+        final var font = Font.loadFromResource("Roboto32");
         blurRenderer.clearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        uiRenderer.setFont(Font.loadFromResource("Roboto32"));
+        uiRenderer.setFont(font);
 
         final var camera = new Camera();
         componentRenderer.setCamera(camera);
@@ -96,12 +101,19 @@ public class Demo {
         }
         inputDispatcher.unregisterInputHandler(intMan);
         inputDispatcher.unregisterInputHandler(uiMan);
-        world.destroy();
         blurRenderer.destroy();
         beamRenderer.destroy();
         componentRenderer.destroy();
+        uiRenderer.destroy();
+        font.destroy();
+        fontShader.destroy();
+        flatShader.destroy();
+        world.destroy();
         atlas.destroy();
         window.destroy();
+        if (Global.DEBUG) {
+            BindManager.DEBUG_verifyAllDeleted();
+        }
     }
 
     private static final String textureRoot = "/xyz/chromabeam/textures/demo/";

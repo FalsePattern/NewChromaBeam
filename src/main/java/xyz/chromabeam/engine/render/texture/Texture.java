@@ -29,7 +29,7 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
 
     public Texture(BufferedImage image, boolean mipMap, boolean dynamic) {
         this.dynamic = dynamic;
-        address = glGenTextures();
+        address = BindManager.genTextures();
         bind();
         var buf = MemoryUtil.memAlloc(image.getWidth() * image.getHeight() * 4);
         try {
@@ -69,7 +69,7 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
 
     public Texture(int width, int height, boolean hdr, boolean dynamic) {
         this.dynamic = dynamic;
-        address = glGenTextures();
+        address = BindManager.genTextures();
         bind();
         glTexImage2D(GL_TEXTURE_2D, 0,hdr ? GL_RGBA32F : GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
         configureTexture(false);
@@ -100,12 +100,12 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
     }
 
     public void unbind() {
-        BindManager.bindTexture(GL_TEXTURE_2D, 0);
+        BindManager.unbindTexture(GL_TEXTURE_2D, address);
     }
 
     @Override
     public void destroy() {
-        glDeleteTextures(address);
+        BindManager.deleteTextures(address);
         if (dynamic) {
             MemoryUtil.memFree(dynamicBuffer);
         }
