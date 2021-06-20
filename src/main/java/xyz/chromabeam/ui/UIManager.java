@@ -29,7 +29,7 @@ public class UIManager extends UIRectangle implements InputHandler, WindowResize
     }
 
     @Override
-    public void accept(int width, int height) {
+    public void windowResize(int width, int height) {
         setSize(width, height);
     }
 }

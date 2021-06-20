@@ -1,5 +1,6 @@
-package xyz.chromabeam.engine.render;
+package xyz.chromabeam.engine.render.buffer;
 
+import xyz.chromabeam.engine.BindManager;
 import xyz.chromabeam.engine.Bindable;
 import xyz.chromabeam.engine.render.texture.Texture;
 import xyz.chromabeam.engine.window.WindowResizeCallback;
@@ -22,36 +23,36 @@ public class FrameBuffer implements WindowResizeCallback, Destroyable, Bindable 
 
     public FrameBuffer(int width, int height) {
         address = glGenFramebuffers();
-        accept(width, height);
+        windowResize(width, height);
     }
 
     private void rebuild() {
         if (texture != null) {
             texture.destroy();
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, address);
+        bind();
         texture = new Texture(width, height, true);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.address(Friend.FRIEND), 0);
         glDrawBuffers(GL_COLOR_ATTACHMENT0);
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             throw new IllegalStateException("Failed to configure frame buffer!");
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        unbind();
     }
 
     @Override
-    public void accept(int width, int height) {
+    public void windowResize(int width, int height) {
         this.width = width;
         this.height = height;
         rebuild();
     }
 
     public void bind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, address);
+        BindManager.bindFrameBuffer(address);
     }
 
     public void unbind() {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        BindManager.bindFrameBuffer(0);
     }
 
     public Texture getTexture() {

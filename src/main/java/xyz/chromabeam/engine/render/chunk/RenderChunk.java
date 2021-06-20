@@ -2,7 +2,7 @@ package xyz.chromabeam.engine.render.chunk;
 
 import org.lwjgl.system.MemoryUtil;
 import xyz.chromabeam.beam.Direction;
-import xyz.chromabeam.engine.render.VertexBuffer;
+import xyz.chromabeam.engine.render.buffer.VertexArray;
 import xyz.chromabeam.engine.render.texture.TextureRegionI;
 import xyz.chromabeam.util.Destroyable;
 
@@ -38,14 +38,14 @@ public class RenderChunk implements Destroyable {
     public int x = 0;
     public int y = 0;
 
-    private final VertexBuffer vertexBuffer;
+    private final VertexArray vertexArray;
 
     private final float[] BUF = new float[FLOATS_PER_QUAD];
     public void set(int x, int y, Direction rotation, boolean flipped, TextureRegionI texture) {
         if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
             throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
         } else if (texture == null) {
-            MemoryUtil.memCopy(P_ZERO_BUF, vertexBuffer.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
+            MemoryUtil.memCopy(P_ZERO_BUF, vertexArray.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
         } else {
             float u0 = texture.u0();
             float v0 = flipped ? texture.v1() : texture.v0();
@@ -92,14 +92,14 @@ public class RenderChunk implements Destroyable {
                 }
             }
         }
-        vertexBuffer.getBufferForWriting().put((y * edgeLength + x) * FLOATS_PER_QUAD, BUF);
+        vertexArray.getWriteBuffer().put((y * edgeLength + x) * FLOATS_PER_QUAD, BUF);
     }
 
     public void unset(int x, int y) {
         if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
             throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
         }
-        MemoryUtil.memCopy(P_ZERO_BUF, vertexBuffer.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
+        MemoryUtil.memCopy(P_ZERO_BUF, vertexArray.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
     }
 
     private final ChunkRenderer parent;
@@ -110,13 +110,13 @@ public class RenderChunk implements Destroyable {
         this.parent = parent;
         this.edgeLength = edgeLength;
         vertices = edgeLength * edgeLength * VERTICES_PER_QUAD;
-        vertexBuffer = new VertexBuffer(vertices, 2, 2);
+        vertexArray = new VertexArray(vertices, 2, 2);
     }
 
     void draw() {
-        vertexBuffer.bind();
+        vertexArray.bind();
         glDrawArrays(GL_TRIANGLES, 0, vertices);
-        vertexBuffer.unbind();
+        vertexArray.unbind();
     }
 
     @Override
@@ -133,6 +133,6 @@ public class RenderChunk implements Destroyable {
     }
 
     void destroyInternal() {
-        vertexBuffer.destroy();
+        vertexArray.destroy();
     }
 }

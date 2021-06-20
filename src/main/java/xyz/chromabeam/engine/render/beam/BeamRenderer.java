@@ -2,7 +2,7 @@ package xyz.chromabeam.engine.render.beam;
 
 import org.joml.Vector2i;
 import xyz.chromabeam.engine.render.world.WorldRenderer;
-import xyz.chromabeam.engine.render.VertexBuffer;
+import xyz.chromabeam.engine.render.buffer.VertexArray;
 import org.joml.Vector3f;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL33C;
@@ -15,7 +15,7 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
     private static final int FLOATS_PER_VERTEX = 5;
     private static final int FLOATS_PER_BEAM = VERTICES_PER_BEAM * FLOATS_PER_VERTEX;
     private static final int BEAMS_PER_DRAW_CALL = 2048;
-    private final VertexBuffer vb;
+    private final VertexArray vb;
     private final int beamsPerDraw;
     private int capacity;
     private int beams = 0;
@@ -29,7 +29,7 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
     public BeamRenderer(int beamsPerDrawCall) {
         super("beam", "color4");
         this.capacity = this.beamsPerDraw = beamsPerDrawCall;
-        vb = new VertexBuffer(beamsPerDrawCall * VERTICES_PER_BEAM, 2, 3);
+        vb = new VertexArray(beamsPerDrawCall * VERTICES_PER_BEAM, 2, 3);
         growableBuffer = MemoryUtil.memAllocFloat(beamsPerDrawCall);
     }
 
@@ -59,11 +59,12 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
         vb.bind();
         while (beams > 0) {
             int inCurrentDraw = Math.min(beams, beamsPerDraw);
-            vb.getBufferForWriting().put(0, growableBuffer, beamsDrawn * FLOATS_PER_BEAM, Math.min(beams, beamsPerDraw) * FLOATS_PER_BEAM);
+            vb.getWriteBuffer().put(0, growableBuffer, beamsDrawn * FLOATS_PER_BEAM, Math.min(beams, beamsPerDraw) * FLOATS_PER_BEAM);
             vb.sync();
             GL33C.glDrawArrays(GL11C.GL_LINES, 0, inCurrentDraw * VERTICES_PER_BEAM);
             beams -= inCurrentDraw;
             beamsDrawn += inCurrentDraw;
         }
+        vb.unbind();
     }
 }

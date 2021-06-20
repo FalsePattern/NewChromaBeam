@@ -38,6 +38,7 @@ public abstract class WorldRenderer extends Renderer implements Destroyable {
         camera.getProjectionMatrix().get3x3(matrixBuffer);
         glUniformMatrix3fv(projectionMatrixUniform, false, matrixBuffer);
         renderContent();
+        shader.unbind();
     }
 
     protected abstract void renderContent();

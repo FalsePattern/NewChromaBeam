@@ -111,7 +111,7 @@ public class Window implements Destroyable {
     private void windowSizeCallback(long address, int width, int height) {
         this.width = width;
         this.height = height;
-        this.resizeCallbacks.forEach((consumer) -> consumer.accept(width, height));
+        this.resizeCallbacks.forEach((consumer) -> consumer.windowResize(width, height));
     }
 
     private void windowFocusCallback(long window, boolean focused) {

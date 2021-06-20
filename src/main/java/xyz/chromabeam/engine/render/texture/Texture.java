@@ -1,7 +1,8 @@
 package xyz.chromabeam.engine.render.texture;
 
+import xyz.chromabeam.engine.BindManager;
 import xyz.chromabeam.engine.Bindable;
-import xyz.chromabeam.engine.render.FrameBuffer;
+import xyz.chromabeam.engine.render.buffer.FrameBuffer;
 import xyz.chromabeam.util.Destroyable;
 import org.lwjgl.system.MemoryUtil;
 
@@ -29,7 +30,7 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
     public Texture(BufferedImage image, boolean mipMap, boolean dynamic) {
         this.dynamic = dynamic;
         address = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, address);
+        bind();
         var buf = MemoryUtil.memAlloc(image.getWidth() * image.getHeight() * 4);
         try {
             {
@@ -69,7 +70,7 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
     public Texture(int width, int height, boolean hdr, boolean dynamic) {
         this.dynamic = dynamic;
         address = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, address);
+        bind();
         glTexImage2D(GL_TEXTURE_2D, 0,hdr ? GL_RGBA32F : GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
         configureTexture(false);
         this.w = width;
@@ -91,15 +92,15 @@ public class Texture implements TextureRegionI, Destroyable, Bindable {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        unbind();
     }
 
     public void bind() {
-        glBindTexture(GL_TEXTURE_2D, address);
+        BindManager.bindTexture(GL_TEXTURE_2D, address);
     }
 
     public void unbind() {
-        glBindTexture(GL_TEXTURE_2D, 0);
+        BindManager.bindTexture(GL_TEXTURE_2D, 0);
     }
 
     @Override

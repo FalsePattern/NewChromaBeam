@@ -1,25 +1,23 @@
-package xyz.chromabeam.engine.render;
+package xyz.chromabeam.engine.render.buffer;
 
+import xyz.chromabeam.engine.BindManager;
 import xyz.chromabeam.engine.Bindable;
 import xyz.chromabeam.util.Destroyable;
-import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.opengl.GL33C.*;
 
-public class VertexBuffer implements Bindable, Destroyable {
+public class VertexArray implements Bindable, Destroyable {
 
     private final int vao;
-    private final int vbo;
-    private final FloatBuffer buffer;
-    private final long pBuffer;
+    private final GpuBuffer vbo;
     private boolean changed = false;
     public final int floatsPerVertex;
     public final int vertexCount;
     public final int floatsInBuffer;
 
-    public VertexBuffer(int vertices, int... attributes) {
+    public VertexArray(int vertices, int... attributes) {
         int attributeCount = attributes.length;
         int floatsPerVertex = 0;
         for (var attrib: attributes) {
@@ -29,10 +27,8 @@ public class VertexBuffer implements Bindable, Destroyable {
         vertexCount = vertices;
         floatsInBuffer = vertices * floatsPerVertex;
         vao = glGenVertexArrays();
-        glBindVertexArray(vao);
-        vbo = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, (long) vertices * floatsPerVertex * 4, GL_DYNAMIC_DRAW);
+        BindManager.bindVertexArray(vao);
+        vbo = new GpuBuffer(vertices * floatsPerVertex * 4, GL_ARRAY_BUFFER);
         int stride = floatsPerVertex * 4;
         int offset = 0;
         for (int i = 0; i < attributeCount; i++) {
@@ -40,27 +36,25 @@ public class VertexBuffer implements Bindable, Destroyable {
             offset += attributes[i] * 4;
             glEnableVertexAttribArray(i);
         }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-        buffer = MemoryUtil.memCallocFloat(vertices * floatsPerVertex);
-        pBuffer = MemoryUtil.memAddress(buffer);
+        vbo.unbind();
+        BindManager.bindVertexArray(0);
     }
 
-    public FloatBuffer getBufferForWriting() {
+    public FloatBuffer getWriteBuffer() {
         changed = true;
-        return buffer;
+        return vbo.getWriteBuffer().asFloatBuffer();
     }
 
     public long getWriteBufferPointer() {
         changed = true;
-        return pBuffer;
+        return vbo.getWriteBufferPointer();
     }
 
     public void sync() {
         if (changed) {
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, buffer);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            vbo.bind();
+            vbo.sync();
+            vbo.unbind();
             changed = false;
         }
     }
@@ -68,18 +62,17 @@ public class VertexBuffer implements Bindable, Destroyable {
     @Override
     public void bind() {
         sync();
-        glBindVertexArray(vao);
+        BindManager.bindVertexArray(vao);
     }
 
     @Override
     public void unbind() {
-        glBindVertexArray(0);
+        BindManager.bindVertexArray(0);
     }
 
     @Override
     public void destroy() {
-        glDeleteBuffers(vbo);
+        vbo.destroy();
         glDeleteVertexArrays(vao);
-        MemoryUtil.memFree(buffer);
     }
 }
