@@ -1,6 +1,6 @@
 package xyz.chromabeam.engine.render;
 
-import xyz.chromabeam.engine.BindManager;
+import xyz.chromabeam.engine.bind.BindManager;
 import xyz.chromabeam.engine.Bindable;
 import xyz.chromabeam.util.Destroyable;
 import xyz.chromabeam.util.ResourceUtil;

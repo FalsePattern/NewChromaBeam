@@ -2,7 +2,7 @@ package xyz.chromabeam.engine.render.buffer;
 
 import org.lwjgl.system.MemoryUtil;
 import xyz.chromabeam.Global;
-import xyz.chromabeam.engine.BindManager;
+import xyz.chromabeam.engine.bind.BindManager;
 import xyz.chromabeam.engine.Bindable;
 import xyz.chromabeam.util.Destroyable;
 
