@@ -1,6 +1,8 @@
 package xyz.chromabeam.engine.window;
 
+import xyz.chromabeam.Global;
 import xyz.chromabeam.engine.Constants;
+import xyz.chromabeam.engine.bind.BindManager;
 import xyz.chromabeam.util.Destroyable;
 import xyz.chromabeam.util.WindowsUtil;
 import org.lwjgl.glfw.*;
@@ -67,6 +69,9 @@ public class Window implements Destroyable {
 
     @Override
     public void destroy() {
+        if (Global.DEBUG) {
+            BindManager.DEBUG_verifyAllDeleted();
+        }
         glfwDestroyWindow(address);
         glfwTerminate();
         singleton = null;

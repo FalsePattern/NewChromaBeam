@@ -59,55 +59,41 @@ public class Demo {
         camera.setZoom(32f);
 
         final var world = new World2D(componentRenderer, beamRenderer);
-        final var components = new Component[]{new Block(), new Emitter(), new Gate(), new Mirror(), new Splitter(), new Delayer()};
-        for (var component : components) {
-            component.initialize(atlas);
-        }
-        final var intMan = new InteractionManager( world, camera, components, 0);
-        final var uiMan = new UIManager(window.getWidth(), window.getHeight(), 1);
+        try (window; atlas; world; flatShader; fontShader; font; uiRenderer; componentRenderer; beamRenderer; blurRenderer) {
+            final var components = new Component[]{new Block(), new Emitter(), new Gate(), new Mirror(), new Splitter(), new Delayer()};
+            for (var component : components) {
+                component.initialize(atlas);
+            }
+            final var intMan = new InteractionManager( world, camera, components, 0);
+            final var uiMan = new UIManager(window.getWidth(), window.getHeight(), 1);
 
-        var box = new Button(100, 100, 100, 100, Color.RED, Color.GREEN, Color.BLUE);
-        uiMan.addChild(box);
+            var box = new Button(100, 100, 100, 100, Color.RED, Color.GREEN, Color.BLUE);
+            uiMan.addChild(box);
 
-        final var inputDispatcher = new InputDispatcher(window.keyboard, window.mouse);
+            final var inputDispatcher = new InputDispatcher(window.keyboard, window.mouse);
 
-        inputDispatcher.registerInputHandler(intMan);
-        inputDispatcher.registerInputHandler(uiMan);
+            inputDispatcher.registerInputHandler(intMan);
+            inputDispatcher.registerInputHandler(uiMan);
 
-        window.addResizeCallback(blurRenderer);
-        window.addResizeCallback(uiRenderer);
-        window.addResizeCallback(uiMan);
-        window.vSync(1);
-        window.show();
-
-        while (!closed.get()) {
-            Window.pollEvents();
-            world.update();
-            inputDispatcher.processInput();
-            Renderer.clear(0, 0, 0, 1);
-            blurRenderer.render();
-            atlas.bind();
-            componentRenderer.render();
-            atlas.unbind();
-            uiMan.draw(uiRenderer);
-            uiRenderer.drawText(200, 200, "It's text!");
-            uiRenderer.render();
-            window.swap();
-        }
-        inputDispatcher.unregisterInputHandler(intMan);
-        inputDispatcher.unregisterInputHandler(uiMan);
-        blurRenderer.destroy();
-        beamRenderer.destroy();
-        componentRenderer.destroy();
-        uiRenderer.destroy();
-        font.destroy();
-        fontShader.destroy();
-        flatShader.destroy();
-        world.destroy();
-        atlas.destroy();
-        window.destroy();
-        if (Global.DEBUG) {
-            BindManager.DEBUG_verifyAllDeleted();
+            window.addResizeCallback(blurRenderer);
+            window.addResizeCallback(uiRenderer);
+            window.addResizeCallback(uiMan);
+            window.vSync(1);
+            window.show();
+            while (!closed.get()) {
+                Window.pollEvents();
+                world.update();
+                inputDispatcher.processInput();
+                Renderer.clear(0, 0, 0, 1);
+                blurRenderer.render();
+                atlas.bind();
+                componentRenderer.render();
+                atlas.unbind();
+                uiMan.draw(uiRenderer);
+                uiRenderer.drawText(200, 200, "It's text!");
+                uiRenderer.render();
+                window.swap();
+            }
         }
     }
 

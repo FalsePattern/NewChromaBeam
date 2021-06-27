@@ -32,7 +32,6 @@ public class BindManager {
             frameBufferManager = new RawResource("frame buffer", GL33C::glGenFramebuffers, GL33C::glDeleteFramebuffers, (frameBuffer) -> glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer));
         }
     }
-
     public static int genVertexArrays() {
         if (Global.DEBUG) {
             int vao = vaoManager.genResource();
@@ -42,7 +41,6 @@ public class BindManager {
             return glGenVertexArrays();
         }
     }
-
     public static void deleteVertexArrays(int array) {
         if (Global.DEBUG) {
             vaoManager.deleteResource(array);
@@ -51,7 +49,6 @@ public class BindManager {
             glDeleteVertexArrays(array);
         }
     }
-
     public static void bindVertexArray(int array) {
         if (Global.DEBUG) {
             vaoManager.bindResource(array);
@@ -61,7 +58,6 @@ public class BindManager {
             glBindVertexArray(array);
         }
     }
-
     public static void unbindVertexArray(int array) {
         if (Global.DEBUG) {
             vaoManager.unbindResource(array);
@@ -83,7 +79,6 @@ public class BindManager {
             return glGenBuffers();
         }
     }
-
     public static void deleteBuffers(int target, int buffer) {
         if (Global.DEBUG) {
             switch (target) {
@@ -98,7 +93,6 @@ public class BindManager {
             glDeleteBuffers(buffer);
         }
     }
-
     public static void bindBuffer(int target, int buffer) {
         if (Global.DEBUG) {
             switch (target) {
@@ -115,7 +109,6 @@ public class BindManager {
             glBindBuffer(target, buffer);
         }
     }
-
     public static void unbindBuffer(int target, int buffer) {
         if (Global.DEBUG) {
             switch (target) {
@@ -136,11 +129,9 @@ public class BindManager {
     public static int genTextures() {
         return Global.DEBUG ? textureManager.genResource() : glGenTextures();
     }
-
     public static void deleteTextures(int texture) {
         if (Global.DEBUG) textureManager.deleteResource(texture); else glDeleteTextures(texture);
     }
-
     public static void bindTexture(int target, int texture) {
         if (Global.DEBUG) {
             if (target != GL_TEXTURE_2D) throw new IllegalArgumentException("Could not bind texture with unknown target type!");
@@ -149,7 +140,6 @@ public class BindManager {
             glBindTexture(target, texture);
         }
     }
-
     public static void unbindTexture(int target, int texture) {
         if (Global.DEBUG) {
             if (target != GL_TEXTURE_2D) throw new IllegalArgumentException("Could not bind texture with unknown target type!");
@@ -162,15 +152,12 @@ public class BindManager {
     public static int createProgram() {
         return Global.DEBUG ? shaderManager.genResource() : glCreateProgram();
     }
-
     public static void deleteProgram(int shader) {
         if (Global.DEBUG) shaderManager.deleteResource(shader); else glDeleteProgram(shader);
     }
-
     public static void bindShader(int shader) {
         if (Global.DEBUG) shaderManager.bindResource(shader); else glUseProgram(shader);
     }
-
     public static void unbindShader(int shader) {
         if (Global.DEBUG) shaderManager.unbindResource(shader); else glUseProgram(0);
     }
@@ -178,15 +165,12 @@ public class BindManager {
     public static int genFrameBuffers() {
         return Global.DEBUG ? frameBufferManager.genResource() : glGenFramebuffers();
     }
-
     public static void deleteFrameBuffers(int frameBuffer) {
         if (Global.DEBUG) frameBufferManager.deleteResource(frameBuffer); else glDeleteFramebuffers(frameBuffer);
     }
-
     public static void bindFrameBuffer(int frameBuffer) {
         if (Global.DEBUG) frameBufferManager.bindResource(frameBuffer); else glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     }
-
     public static void unbindFrameBuffer(int frameBuffer) {
         if (Global.DEBUG) frameBufferManager.unbindResource(frameBuffer); else glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
