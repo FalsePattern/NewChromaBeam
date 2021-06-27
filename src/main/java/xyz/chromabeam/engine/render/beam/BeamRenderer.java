@@ -30,7 +30,7 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
         super("beam", "color4");
         this.capacity = this.beamsPerDraw = beamsPerDrawCall;
         vb = new VertexArray(beamsPerDrawCall * VERTICES_PER_BEAM, 2, 3);
-        growableBuffer = MemoryUtil.memAllocFloat(beamsPerDrawCall);
+        growableBuffer = MemoryUtil.memAllocFloat(beamsPerDrawCall * FLOATS_PER_BEAM);
     }
 
     public void drawBeam(Vector2i a, Vector2i b, Vector3f color) {
@@ -39,8 +39,8 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
 
     public void drawBeam(int x1, int y1, int x2, int y2, float r, float g, float b) {
         if (beams == capacity) {
-            capacity *= 1.5f;
-            growableBuffer = MemoryUtil.memRealloc(growableBuffer, capacity);
+            capacity *= 2;
+            growableBuffer = MemoryUtil.memRealloc(growableBuffer, capacity * FLOATS_PER_BEAM);
         }
         BUF[0] = x1 + 0.5f;
         BUF[1] = y1 + 0.5f;

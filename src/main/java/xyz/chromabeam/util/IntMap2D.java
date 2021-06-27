@@ -4,12 +4,14 @@ import org.joml.Vector2i;
 import org.joml.Vector2ic;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Supplier;
 
-public class IntMap2D<T> implements Iterable<T>{
-    private final TreeMap<Integer, TreeMap<Integer, T>> map = new TreeMap<>();
+public class IntMap2D<T> implements Iterable<T> {
+    private final Map<Integer, Map<Integer, T>> map = new HashMap<>();
     private int size = 0;
     private int minX = 0;
     private int maxX = 0;
@@ -68,7 +70,7 @@ public class IntMap2D<T> implements Iterable<T>{
 
     public void set(int x, int y, T value) {
         if (value == null) delete(x, y);
-        var row = map.computeIfAbsent(y, (ignored) -> new TreeMap<>());
+        var row = map.computeIfAbsent(y, (ignored) -> new HashMap<>());
         if (row.put(x, value) == null) {
             size++;
             minX = Math.min(x, minX);
@@ -126,7 +128,7 @@ public class IntMap2D<T> implements Iterable<T>{
     @Override
     public Iterator<T> iterator() {
         var result = new ArrayList<T>(size);
-        for (TreeMap<Integer, T> row : map.values()) {
+        for (Map<Integer, T> row : map.values()) {
             result.addAll(row.values());
         }
         return result.iterator();

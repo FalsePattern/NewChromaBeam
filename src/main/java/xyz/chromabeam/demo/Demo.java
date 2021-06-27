@@ -3,6 +3,7 @@ package xyz.chromabeam.demo;
 import org.lwjgl.opengl.GL33C;
 import org.xml.sax.SAXException;
 import xyz.chromabeam.Global;
+import xyz.chromabeam.beam.Direction;
 import xyz.chromabeam.engine.bind.BindManager;
 import xyz.chromabeam.engine.InputDispatcher;
 import xyz.chromabeam.ui.Button;
@@ -30,6 +31,7 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Demo {
@@ -80,19 +82,37 @@ public class Demo {
             window.addResizeCallback(uiMan);
             window.vSync(1);
             window.show();
+            int ticks = 0;
+            double average = 0;
+            var r = new Random();
+            for (int y = -100; y < 100; y++) {
+                for (int x = -100; x < 100; x++) {
+                    var c = components[1].newInstance();
+                    components[1].copy(c);
+                    world.set(x, y, Direction.values()[r.nextInt(4)], r.nextBoolean(), c);
+                }
+            }
             while (!closed.get()) {
                 Window.pollEvents();
+                var start = System.nanoTime();
                 world.update();
+                var end = System.nanoTime();
+                average = (average * ticks + (end - start) / 1000d) / ++ticks;
                 inputDispatcher.processInput();
                 Renderer.clear(0, 0, 0, 1);
                 blurRenderer.render();
                 atlas.bind();
                 componentRenderer.render();
                 atlas.unbind();
-                uiMan.draw(uiRenderer);
-                uiRenderer.drawText(200, 200, "It's text!");
-                uiRenderer.render();
+                //uiMan.draw(uiRenderer);
+                //uiRenderer.drawText(200, 200, "It's text!");
+                //uiRenderer.render();
                 window.swap();
+                if (ticks % 100 == 99) {
+                    System.out.println("Average tick duration in last 100 ticks: " + average + " us");
+                    average = 0;
+                    ticks = 0;
+                }
             }
         }
     }
