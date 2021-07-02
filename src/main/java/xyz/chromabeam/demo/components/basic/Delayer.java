@@ -10,9 +10,8 @@ import xyz.chromabeam.engine.render.texture.TextureAtlas;
 import xyz.chromabeam.world.BeamEmitter;
 
 public class Delayer extends Component implements BeamConsumer, BeamProducer, Tickable {
-    private final Vector3f input = new Vector3f();
-    private final Vector3f output = new Vector3f();
-    private final Vector3f tmp = new Vector3f();
+    private final Vector3f value = new Vector3f();
+    private boolean updated = false;
 
     @Override
     public void initialize(TextureAtlas atlas) {
@@ -21,27 +20,31 @@ public class Delayer extends Component implements BeamConsumer, BeamProducer, Ti
 
     @Override
     public void emitBeams(BeamEmitter beamEmitter) {
-        beamEmitter.emit(Direction.RIGHT, output.x, output.y, output.z);
+        beamEmitter.emit(Direction.RIGHT, value.x, value.y, value.z);
+        updated = false;
+    }
+
+    @Override
+    public boolean wantEmit() {
+        return updated;
     }
 
     @Override
     public void incomingBeam(Direction direction, float red, float green, float blue) {
         if (direction == Direction.RIGHT) {
-            input.max(tmp.set(red, green, blue));
+            value.set(red, green, blue);
         }
     }
 
     @Override
     public void tick() {
-        output.set(input);
-        input.set(0);
+        updated = true;
     }
 
     @Override
     public void copy(Component other) {
         super.copy(other);
         var o = (Delayer) other;
-        o.input.set(input);
-        o.output.set(output);
+        o.value.set(value);
     }
 }

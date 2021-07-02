@@ -1,5 +1,6 @@
 package xyz.chromabeam.component;
 
+import org.joml.Vector3f;
 import xyz.chromabeam.engine.render.texture.TextureAtlas;
 import xyz.chromabeam.engine.render.texture.TextureRegionI;
 

@@ -18,4 +18,12 @@ public class Emitter extends Component implements BeamProducer {
         beamEmitter.emit(Direction.RIGHT, 1, 1, 1);
     }
 
+    @Override
+    public boolean wantEmit() {
+        return false;
+    }
+
+    @Override
+    public void tick() {
+    }
 }

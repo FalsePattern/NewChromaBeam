@@ -79,6 +79,7 @@ public class InteractionManager implements InputHandler {
                 if (existing != null) {
                     if (existing.isInteractive()) {
                         ((UserInteractive)existing).mouseInteraction();
+                        world.forceTick(x, y);
                     }
                 } else {
                     System.out.println("Placed " + selectedComponent.getName() + " at: (" + Math.floor(cursorProjectionBuffer.x) + ", " + Math.floor(cursorProjectionBuffer.y)

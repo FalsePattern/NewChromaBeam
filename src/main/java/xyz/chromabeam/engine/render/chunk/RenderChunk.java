@@ -32,6 +32,8 @@ public class RenderChunk implements Destroyable {
     public static final int FLOATS_PER_QUAD = FLOATS_PER_VERTEX * VERTICES_PER_QUAD;
     private static final long BYTES_PER_QUAD = FLOATS_PER_QUAD * 4;
 
+    public static final int CHUNK_SIDE_LENGTH = 128;
+
     private static final long P_ZERO_BUF = MemoryUtil.nmemCalloc(BYTES_PER_QUAD, 1);
 
 

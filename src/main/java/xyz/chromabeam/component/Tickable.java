@@ -1,7 +1,7 @@
 package xyz.chromabeam.component;
 
 /**
- * Tickables are time-aware components. These are gates, delayers, and other non-instant components.
+ * Tickables are components that do specific operations non-instantly, such as gates and delayers.
  */
 public interface Tickable extends ComponentI {
     /**

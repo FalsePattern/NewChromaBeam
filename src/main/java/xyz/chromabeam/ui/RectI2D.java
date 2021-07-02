@@ -9,7 +9,7 @@ public class RectI2D {
     public final Vector2i position = new Vector2i(0);
     public final Vector2i size = new Vector2i(0);
 
-    private static final Cache<RectI2D> rectCache = new Cache<>(RectI2D::new);
+    private static final Cache<RectI2D> rectCache = new Cache<>(RectI2D::new, RectI2D[]::new);
 
     public static RectI2D getBuffer() {
         return rectCache.getOrCreate();

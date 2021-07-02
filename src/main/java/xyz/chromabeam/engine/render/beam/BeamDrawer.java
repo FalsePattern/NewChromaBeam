@@ -1,5 +1,11 @@
 package xyz.chromabeam.engine.render.beam;
 
+import xyz.chromabeam.beam.Direction;
+import xyz.chromabeam.engine.beam.Beam;
+
 public interface BeamDrawer {
-    void drawBeam(int x1, int y1, int x2, int y2, float r, float g, float b);
+    void clear();
+    void drawBeam(Beam beam);
+    void removeBeam(int x, int y, Direction direction);
+    void removeAll(int x, int y);
 }

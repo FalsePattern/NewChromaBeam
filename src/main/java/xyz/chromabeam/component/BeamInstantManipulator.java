@@ -13,7 +13,7 @@ public interface BeamInstantManipulator extends ComponentI {
      * @param direction The direction of the incoming beam. Note: this is the way the beam is headed, not the face it
      *                  hit, so a beam with direction RIGHT hit the LEFT face of the component, and so on...
      * @param instantOutput !!!WARNING!!! You should only use instant components if you are 100% sure that it cannot cause
-     *                      beam loops! Otherwise it can cause the game to hang.
+     *                      uncontrolled beam loops! Otherwise it can cause the game to hang.
      */
     void incomingBeam(Direction direction, float red, float green, float blue, BeamEmitter instantOutput);
 

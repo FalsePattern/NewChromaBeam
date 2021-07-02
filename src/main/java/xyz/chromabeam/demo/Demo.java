@@ -2,13 +2,14 @@ package xyz.chromabeam.demo;
 
 import org.lwjgl.opengl.GL33C;
 import org.xml.sax.SAXException;
-import xyz.chromabeam.Global;
 import xyz.chromabeam.beam.Direction;
-import xyz.chromabeam.engine.bind.BindManager;
 import xyz.chromabeam.engine.InputDispatcher;
+import xyz.chromabeam.engine.render.chunk.RenderChunk;
 import xyz.chromabeam.ui.Button;
 import xyz.chromabeam.ui.UIManager;
 import xyz.chromabeam.ui.font.Font;
+import xyz.chromabeam.world.ChunkedWorld2D;
+import xyz.chromabeam.world.FlatWorld2D;
 import xyz.chromabeam.world.InteractionManager;
 import xyz.chromabeam.component.Component;
 import xyz.chromabeam.demo.components.basic.*;
@@ -25,6 +26,7 @@ import xyz.chromabeam.ui.ScreenSpaceUIDrawer;
 import xyz.chromabeam.util.ResourceUtil;
 import xyz.chromabeam.world.World2D;
 import xyz.chromabeam.world.WorldChunk;
+import xyz.chromabeam.world.WorldRenderer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Color;
@@ -35,12 +37,13 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Demo {
-    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
+    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, InterruptedException {
+        //Thread.sleep(10000 );
         final var closed = new AtomicBoolean(false);
         final var window = new Window(800, 600, "ChromaBeam Dev demo 0.0.1", () -> closed.set(true));
         final var atlas = new TextureAtlas(getTextures());
 
-        final var componentRenderer = new ChunkRenderer(WorldChunk.CHUNK_SIDE_LENGTH);
+        final var componentRenderer = new ChunkRenderer(RenderChunk.CHUNK_SIDE_LENGTH);
         final var beamRenderer = new BeamRenderer();
         final var blurRenderer = new DeferredRenderer(window.getWidth(), window.getHeight(), beamRenderer, "pos2uv", "beamQuad");
         final var flatShader = Shader.fromShaderResource("ui", "color4");
@@ -60,8 +63,13 @@ public class Demo {
         });
         camera.setZoom(32f);
 
-        final var world = new World2D(componentRenderer, beamRenderer);
-        try (window; atlas; world; flatShader; fontShader; font; uiRenderer; componentRenderer; beamRenderer; blurRenderer) {
+        final World2D world = new FlatWorld2D(new WorldRenderer((x, y) -> {
+            var c = componentRenderer.allocateChunk();
+            c.x = x;
+            c.y = y;
+            return c;
+        }), beamRenderer);
+        try (window; atlas; flatShader; fontShader; font; uiRenderer; componentRenderer; beamRenderer; blurRenderer) {
             final var components = new Component[]{new Block(), new Emitter(), new Gate(), new Mirror(), new Splitter(), new Delayer()};
             for (var component : components) {
                 component.initialize(atlas);
@@ -80,16 +88,19 @@ public class Demo {
             window.addResizeCallback(blurRenderer);
             window.addResizeCallback(uiRenderer);
             window.addResizeCallback(uiMan);
-            window.vSync(1);
+            window.vSync(0);
             window.show();
             int ticks = 0;
             double average = 0;
-            var r = new Random();
-            for (int y = -100; y < 100; y++) {
-                for (int x = -100; x < 100; x++) {
-                    var c = components[1].newInstance();
-                    components[1].copy(c);
-                    world.set(x, y, Direction.values()[r.nextInt(4)], r.nextBoolean(), c);
+            var r = new Random(1);
+
+            for (int y = -256; y < 255; y++) {
+                for (int x = -256; x < 255; x++) {
+                    if (r.nextInt(2) == 0) {
+                        var c = components[1].newInstance();
+                        components[1].copy(c);
+                        world.set(x, y, Direction.values()[r.nextInt(4)], r.nextBoolean(), c);
+                    }
                 }
             }
             while (!closed.get()) {
@@ -97,7 +108,8 @@ public class Demo {
                 var start = System.nanoTime();
                 world.update();
                 var end = System.nanoTime();
-                average = (average * ticks + (end - start) / 1000d) / ++ticks;
+                average += (end - start) / 100000d;
+                ticks++;
                 inputDispatcher.processInput();
                 Renderer.clear(0, 0, 0, 1);
                 blurRenderer.render();
@@ -108,8 +120,8 @@ public class Demo {
                 //uiRenderer.drawText(200, 200, "It's text!");
                 //uiRenderer.render();
                 window.swap();
-                if (ticks % 100 == 99) {
-                    System.out.println("Average tick duration in last 100 ticks: " + average + " us");
+                if (ticks % 100 == 0) {
+                    System.out.printf("Average tick duration in last 100 ticks: %.3f us\n", average);
                     average = 0;
                     ticks = 0;
                 }

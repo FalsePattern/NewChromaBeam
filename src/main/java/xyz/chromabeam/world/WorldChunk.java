@@ -14,6 +14,7 @@ import java.util.*;
  * The basic storage block of the ChromaBeam world. Chunks improve component access speeds by reducing the amount of
  * List accesses. Update order of a chunk is randomized, as components are updated independently anyways.
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class WorldChunk implements Destroyable, WorldTickable {
     public static final int CHUNK_SIDE_LENGTH = 128;
     public static final int COMPONENTS_PER_CHUNK = CHUNK_SIDE_LENGTH * CHUNK_SIDE_LENGTH;
@@ -27,15 +28,15 @@ public class WorldChunk implements Destroyable, WorldTickable {
     private final Direction[] directions = new Direction[COMPONENTS_PER_CHUNK];
     private final boolean[] flips = new boolean[COMPONENTS_PER_CHUNK];
 
-    private final List<Triplet<Tickable>> tickables = new ArrayList<>();
-    private final List<Triplet<BeamProducer>> producers = new ArrayList<>();
-    private final List<Triplet<?>> graphicsUpdateQueue = new ArrayList<>();
+    private final List<ComponentTransform<Tickable>> tickables = new ArrayList<>();
+    private final List<ComponentTransform<BeamProducer>> producers = new ArrayList<>();
+    private final List<ComponentTransform<?>> graphicsUpdateQueue = new ArrayList<>();
 
-    private final Map<ComponentI, Vector2i> reverseComponentMap = new HashMap<>();
+    //private final Map<ComponentI, Vector2i> reverseComponentMap = new HashMap<>();
 
     //Cache objects to reduce GC pressure
-    private final Cache<Vector2i> vectorCache = new Cache<>(Vector2i::new);
-    private final Cache<Triplet<ComponentI>> compCache = new Cache<>(Triplet::new);
+    //private final Cache<Vector2i> vectorCache = new Cache<>(Vector2i::new);
+    private final Cache<ComponentTransform<ComponentI>> compCache = new Cache<>(ComponentTransform::new, ComponentTransform[]::new);
 
     public WorldChunk(int cX, int cY, RenderChunk assignedRenderChunk) {
         this.renderChunk = assignedRenderChunk;
@@ -60,18 +61,13 @@ public class WorldChunk implements Destroyable, WorldTickable {
             }
         }
         for (var e: producers) {
-            e.component.emitBeams((beamDir, red, green, blue) -> {
-                if (red <= 0 && green <= 0 && blue <= 0) return;
-                var pos = reverseComponentMap.get(e.component);
-                resolver.scheduleBeam(pos.x + baseX, pos.y + baseY, beamDir.applyFlip(e.flipped).add(e.direction), Math.max(0, red), Math.max(0, green), Math.max(0, blue));
-            });
+            e.component.emitBeams((beamDir, red, green, blue) -> resolver.scheduleBeam(e.position.x + baseX, e.position.y + baseY, beamDir.applyFlip(e.flipped).add(e.direction), red, green, blue));
         }
     }
 
     public void updateGraphics() {
         for (var t:graphicsUpdateQueue) {
-            var vec = reverseComponentMap.get(t.component);
-            updateGraphics(vec.x, vec.y, getRotation(vec.x, vec.y), getFlipped(vec.x, vec.y), t.component);
+            updateGraphics(t.position.x, t.position.y, t.direction, t.flipped, t.component);
         }
         graphicsUpdateQueue.clear();
     }
@@ -91,21 +87,19 @@ public class WorldChunk implements Destroyable, WorldTickable {
         directions[i] = direction;
         flips[i] = flipped;
         if (old != null) {
-            reverseComponentMap.put(component, reverseComponentMap.remove(old));
             removeComp(old);
         } else {
-            reverseComponentMap.put(component, vectorCache.getOrCreate().set(x, y));
             size++;
         }
         if (component.isTickable() || component.isProducer()) {
-            var triplet = compCache.getOrCreate().with(component, direction, flipped);
+            var transform = compCache.getOrCreate().with(component, x, y, direction, flipped);
             if (component.isTickable()) {
                 //noinspection unchecked
-                tickables.add(triplet);
+                tickables.add((ComponentTransform)transform);
             }
             if (component.isProducer()) {
                 //noinspection unchecked
-                producers.add(triplet);
+                producers.add((ComponentTransform)transform);
             }
         }
 
@@ -131,9 +125,9 @@ public class WorldChunk implements Destroyable, WorldTickable {
         return flips[y * CHUNK_SIDE_LENGTH + x];
     }
 
-    public xyz.chromabeam.util.tuples.mutable.Triplet<Component, Direction, Boolean> getCompRotFlip(int x, int y, xyz.chromabeam.util.tuples.mutable.Triplet<Component, Direction, Boolean> buffer) {
+    public ComponentTransform<Component> getTransform(int x, int y, ComponentTransform<Component> buffer) {
         int i = y * CHUNK_SIDE_LENGTH + x;
-        return buffer.with(components[i], directions[i], flips[i]);
+        return buffer.with(components[i], x, y, directions[i], flips[i]);
     }
 
     /**
@@ -149,7 +143,6 @@ public class WorldChunk implements Destroyable, WorldTickable {
         components[i] = null;
         removeComp(comp);
         clearGraphics(x, y);
-        vectorCache.put(reverseComponentMap.remove(comp));
         size--;
         return comp;
     }
@@ -178,12 +171,12 @@ public class WorldChunk implements Destroyable, WorldTickable {
 
     private void removeComp(Component component) {
         if (component.isProducer() || component.isTickable()) {
-            Triplet<?> triplet = null;
+            ComponentTransform<?> transform = null;
             if (component.isTickable()) {
                 var opt = tickables.stream().filter((p) -> p.component == component).findFirst();
                 if (opt.isPresent()) {
                     tickables.remove(opt.get());
-                    triplet = opt.get();
+                    transform = opt.get();
                 } else {
                     throw new IllegalStateException("World Chunk cache corruption Type A detected!");
                 }
@@ -192,18 +185,18 @@ public class WorldChunk implements Destroyable, WorldTickable {
                 var opt = producers.stream().filter((p) -> p.component == component).findFirst();
                 if (opt.isPresent()) {
                     producers.remove(opt.get());
-                    if (triplet != null) {
-                        if (triplet != opt.get())
+                    if (transform != null) {
+                        if (transform != opt.get())
                             throw new IllegalStateException("World Chunk cache corruption Type C detected!");
                     } else {
-                        triplet = opt.get();
+                        transform = opt.get();
                     }
                 } else {
                     throw new IllegalStateException("World Chunk cache corruption Type B detected!");
                 }
             }
             //noinspection unchecked
-            compCache.put(triplet.with(null, null, false));
+            compCache.put((ComponentTransform<ComponentI>) transform.with(null, 0, 0, null, false));
         }
     }
 
@@ -218,20 +211,6 @@ public class WorldChunk implements Destroyable, WorldTickable {
             renderChunk.unset(x, y);
         } else {
             renderChunk.set(x, y, rotation, flipped, component.getTexture());
-        }
-    }
-
-    private static final class Triplet<T extends ComponentI> {
-        T component;
-        Direction direction;
-        boolean flipped;
-
-        @SuppressWarnings("rawtypes")
-        Triplet with(T component, Direction direction, boolean flipped) {
-            this.component = component;
-            this.direction = direction;
-            this.flipped = flipped;
-            return this;
         }
     }
 }
