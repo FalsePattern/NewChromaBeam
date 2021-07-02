@@ -5,9 +5,6 @@ import xyz.chromabeam.beam.Direction;
 import xyz.chromabeam.engine.beam.Beam;
 import xyz.chromabeam.util.Cache;
 
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
 public class BeamMap {
     private final Container2D<Beam[]> neighborStorage = new NativeContainer2D<>(Beam[][]::new, Beam[][][]::new, Beam[][][][]::new);
     private final Cache<Beam[]> neighborCache = new Cache<>(() -> new Beam[4], Beam[][]::new);

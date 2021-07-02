@@ -1,7 +1,5 @@
 package xyz.chromabeam.util;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -15,7 +13,7 @@ public class Cache<T> {
     public Cache(Supplier<T> creator, Function<Integer, T[]> arrayCreator) {
         this.creator = creator;
         this.arrayCreator = arrayCreator;
-        buffer = arrayCreator.apply(256);
+        buffer = arrayCreator.apply(INITIAL_CACHE_SIZE);
     }
     public T getOrCreate() {
         if (i == -1) return creator.get(); else {

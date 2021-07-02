@@ -215,16 +215,14 @@ public class FlatWorld2D implements World2D, BeamResolver {
         beam.red = red;
         beam.green = green;
         beam.blue = blue;
-        if (beam.infinite) {
-            if (beamRenderer != null) {
-                beamRenderer.drawBeam(beam);
-            }
-        } else {
+        if (!beam.infinite) {
             var target = storage.get(beam.x, beam.y).component;
             if (target.isInstantManipulator() || target.isConsumer()) {
                 propagatingBeams.put(beam);
             }
-            if (beamRenderer != null) beamRenderer.drawBeam(beam);
+        }
+        if (beamRenderer != null) {
+            beamRenderer.drawBeam(beam);
         }
     }
 

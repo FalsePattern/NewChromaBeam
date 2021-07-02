@@ -8,7 +8,6 @@ import xyz.chromabeam.engine.render.chunk.RenderChunk;
 import xyz.chromabeam.ui.Button;
 import xyz.chromabeam.ui.UIManager;
 import xyz.chromabeam.ui.font.Font;
-import xyz.chromabeam.world.ChunkedWorld2D;
 import xyz.chromabeam.world.FlatWorld2D;
 import xyz.chromabeam.world.InteractionManager;
 import xyz.chromabeam.component.Component;
@@ -25,7 +24,6 @@ import xyz.chromabeam.engine.window.Window;
 import xyz.chromabeam.ui.ScreenSpaceUIDrawer;
 import xyz.chromabeam.util.ResourceUtil;
 import xyz.chromabeam.world.World2D;
-import xyz.chromabeam.world.WorldChunk;
 import xyz.chromabeam.world.WorldRenderer;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -37,7 +35,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Demo {
-    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         //Thread.sleep(10000 );
         final var closed = new AtomicBoolean(false);
         final var window = new Window(800, 600, "ChromaBeam Dev demo 0.0.1", () -> closed.set(true));

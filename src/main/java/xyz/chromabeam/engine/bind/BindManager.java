@@ -203,8 +203,4 @@ public class BindManager {
         }
     }
 
-    private static void collectExceptions(List<Integer> managedList, Map<Integer, Exception> exceptionMap, List<Exception> accumulator) {
-        managedList.forEach((object) -> accumulator.add(exceptionMap.get(object)));
-    }
-
 }

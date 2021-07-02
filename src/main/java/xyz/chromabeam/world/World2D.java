@@ -2,7 +2,6 @@ package xyz.chromabeam.world;
 
 import xyz.chromabeam.beam.Direction;
 import xyz.chromabeam.component.Component;
-import xyz.chromabeam.component.Tickable;
 
 public interface World2D extends BeamResolver {
     Component set(int x, int y, Direction direction, boolean flipped, Component component);
