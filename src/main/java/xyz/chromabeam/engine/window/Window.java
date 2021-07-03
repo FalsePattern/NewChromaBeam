@@ -47,7 +47,12 @@ public class Window implements Destroyable {
         if (address == 0L) {
             throw new ExceptionInInitializerError("Failed to create GLFW window!");
         }
-        hWnd = WindowsUtil.IS_WINDOWS ? GLFWNativeWin32.glfwGetWin32Window(address) : 0;
+        if (WindowsUtil.IS_WINDOWS) {
+            WindowsUtil.init();
+            hWnd = GLFWNativeWin32.glfwGetWin32Window(address);
+        } else {
+            hWnd = 0;
+        }
         glfwSetWindowSizeCallback(address, this::windowSizeCallback);
         glfwSetWindowCloseCallback(address, this::windowCloseCallback);
         glfwSetWindowFocusCallback(address, this::windowFocusCallback);

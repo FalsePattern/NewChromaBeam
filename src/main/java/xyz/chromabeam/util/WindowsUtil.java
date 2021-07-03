@@ -6,9 +6,12 @@ import org.lwjgl.system.windows.User32;
 
 public final class WindowsUtil {
     public static final boolean IS_WINDOWS = System.getProperty("os.name").contains("win");
-    private static final long
-            SetCapture = APIUtil.apiGetFunctionAddress(User32.getLibrary(), "SetCapture"),
-            ReleaseCapture = APIUtil.apiGetFunctionAddress(User32.getLibrary(), "ReleaseCapture");
+    private static long SetCapture, ReleaseCapture;
+    public static void init() {
+        SetCapture = APIUtil.apiGetFunctionAddress(User32.getLibrary(), "SetCapture");
+        ReleaseCapture = APIUtil.apiGetFunctionAddress(User32.getLibrary(), "ReleaseCapture");
+    }
+
 
     public static long SetCapture(long hWnd) {
         return JNI.callPP(hWnd, SetCapture);
