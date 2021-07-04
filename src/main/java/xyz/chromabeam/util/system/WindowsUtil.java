@@ -1,11 +1,10 @@
-package xyz.chromabeam.util;
+package xyz.chromabeam.util.system;
 
 import org.lwjgl.system.APIUtil;
 import org.lwjgl.system.JNI;
 import org.lwjgl.system.windows.User32;
 
 public final class WindowsUtil {
-    public static final boolean IS_WINDOWS = System.getProperty("os.name").contains("win");
     private static long SetCapture, ReleaseCapture;
     public static void init() {
         SetCapture = APIUtil.apiGetFunctionAddress(User32.getLibrary(), "SetCapture");

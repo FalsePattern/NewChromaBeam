@@ -4,8 +4,7 @@ import xyz.chromabeam.Global;
 import xyz.chromabeam.engine.Constants;
 import xyz.chromabeam.engine.bind.BindManager;
 import xyz.chromabeam.util.Destroyable;
-import xyz.chromabeam.util.WindowsUtil;
-import org.lwjgl.glfw.*;
+import xyz.chromabeam.util.system.NativeUtil;
 import org.lwjgl.opengl.GL;
 
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ public class Window implements Destroyable {
     private int height;
     public final Keyboard keyboard = new Keyboard();
     public final Mouse mouse = new Mouse();
-    private final long hWnd;
     public Window(int width, int height, String title, WindowCloseCallback closeCallback) {
         this.width = width;
         this.height = height;
@@ -47,12 +45,7 @@ public class Window implements Destroyable {
         if (address == 0L) {
             throw new ExceptionInInitializerError("Failed to create GLFW window!");
         }
-        if (WindowsUtil.IS_WINDOWS) {
-            WindowsUtil.init();
-            hWnd = GLFWNativeWin32.glfwGetWin32Window(address);
-        } else {
-            hWnd = 0;
-        }
+        NativeUtil.initialize();
         glfwSetWindowSizeCallback(address, this::windowSizeCallback);
         glfwSetWindowCloseCallback(address, this::windowCloseCallback);
         glfwSetWindowFocusCallback(address, this::windowFocusCallback);
@@ -150,24 +143,24 @@ public class Window implements Destroyable {
     }
 
     private void cursorPosCallback(long window, double x, double y) {
-        if (WindowsUtil.IS_WINDOWS) {
-            //Smart mouse auto-capturing for windows systems
+        if (NativeUtil.systemSupportsMouseCapture()) {
+            //Smart mouse handling for window managers that support mouse capture
             if (x >= 0 && x < width && y >= 0 && y < height) {
                 mouse.onMouseMove((int) x, (int) y);
                 if (!mouse.isInWindow()) {
-                    WindowsUtil.SetCapture(hWnd);
+                    NativeUtil.captureMouse(address);
                     mouse.onMouseEnter();
                 }
             } else {
                 if (mouse.anyPressed()) {
                     mouse.onMouseMove((int) x, (int) y);
                 } else {
-                    WindowsUtil.ReleaseCapture(hWnd);
+                    NativeUtil.releaseMouse(address);
                     mouse.onMouseLeave();
                 }
             }
         } else {
-            //Primitive input handling for linux, because
+            //Primitive input handling for window managers that don't support mouse capture
             mouse.onMouseMove((int)x, (int)y);
         }
     }
