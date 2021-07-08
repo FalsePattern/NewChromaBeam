@@ -1,23 +1,42 @@
 package xyz.chromabeam.engine.render.buffer;
 
+import org.lwjgl.opengl.GL11C;
+import xyz.chromabeam.Global;
 import xyz.chromabeam.engine.bind.BindManager;
 import xyz.chromabeam.engine.Bindable;
 import xyz.chromabeam.util.Destroyable;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL33C.*;
 
 public class VertexArray implements Bindable, Destroyable {
 
-    private final int vao;
+    private final int pointer;
     private final GpuBuffer vbo;
-    private boolean changed = false;
+    private boolean vboChanged = false;
+
+    public final int drawMethod;
     public final int floatsPerVertex;
     public final int vertexCount;
     public final int floatsInBuffer;
 
-    public VertexArray(int vertices, int... attributes) {
+    public enum DrawMethod {
+        TRIANGLES, TRIANGLE_FAN, TRIANGLE_STRIP, LINES, LINE_STRIP;
+
+        private int toGL() {
+            return switch (this) {
+                case TRIANGLES -> GL_TRIANGLES;
+                case TRIANGLE_FAN ->  GL_TRIANGLE_FAN;
+                case TRIANGLE_STRIP -> GL_TRIANGLE_STRIP;
+                case LINES -> GL_LINES;
+                case LINE_STRIP -> GL_LINE_STRIP;
+            };
+        }
+    }
+
+    public VertexArray(DrawMethod drawMethod, int vertices, int... attributes) {
         int attributeCount = attributes.length;
         int floatsPerVertex = 0;
         for (var attrib: attributes) {
@@ -26,8 +45,9 @@ public class VertexArray implements Bindable, Destroyable {
         this.floatsPerVertex = floatsPerVertex;
         vertexCount = vertices;
         floatsInBuffer = vertices * floatsPerVertex;
-        vao = BindManager.genVertexArrays();
-        BindManager.bindVertexArray(vao);
+        this.drawMethod = drawMethod.toGL();
+        pointer = BindManager.genVertexArrays();
+        BindManager.bindVertexArray(pointer);
         vbo = new GpuBuffer(vertices * floatsPerVertex * 4, GL_ARRAY_BUFFER);
         int stride = floatsPerVertex * 4;
         int offset = 0;
@@ -37,42 +57,60 @@ public class VertexArray implements Bindable, Destroyable {
             glEnableVertexAttribArray(i);
         }
         vbo.unbind();
-        BindManager.unbindVertexArray(vao);
     }
 
-    public FloatBuffer getWriteBuffer() {
-        changed = true;
+    public FloatBuffer getVertexBuffer() {
+        vboChanged = true;
         return vbo.getWriteBuffer().asFloatBuffer();
     }
 
-    public long getWriteBufferPointer() {
-        changed = true;
+    public long getVertexBufferPointer() {
+        vboChanged = true;
         return vbo.getWriteBufferPointer();
     }
 
-    public void sync() {
-        if (changed) {
+    private void syncVBO() {
+        if (vboChanged) {
             vbo.bind();
             vbo.sync();
             vbo.unbind();
-            changed = false;
+            vboChanged = false;
         }
+    }
+
+    public void sync() {
+        if (Global.DEBUG) {
+            int bound = BindManager.DEBUG_boundVAO();
+            if (bound != pointer) throw new IllegalStateException("Tried to sync VAO while it wasn't bound!");
+        }
+        syncVBO();
+    }
+
+    public void draw() {
+        if (Global.DEBUG) {
+            int bound = BindManager.DEBUG_boundVAO();
+            if (bound != pointer) throw new IllegalStateException("Tried to draw vertex buffer while a different one was bound!");
+        }
+        drawImpl();
+    }
+
+    protected void drawImpl() {
+        GL11C.glDrawArrays(drawMethod, 0, vertexCount);
     }
 
     @Override
     public void bind() {
-        sync();
-        BindManager.bindVertexArray(vao);
+        BindManager.bindVertexArray(pointer);
     }
 
     @Override
     public void unbind() {
-        BindManager.unbindVertexArray(vao);
+        BindManager.unbindVertexArray(pointer);
     }
 
     @Override
     public void destroy() {
         vbo.destroy();
-        BindManager.deleteVertexArrays(vao);
+        BindManager.deleteVertexArrays(pointer);
     }
 }

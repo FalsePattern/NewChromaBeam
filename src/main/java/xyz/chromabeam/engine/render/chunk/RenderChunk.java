@@ -1,12 +1,15 @@
 package xyz.chromabeam.engine.render.chunk;
 
-import org.lwjgl.system.MemoryUtil;
+import org.joml.Vector4f;
 import xyz.chromabeam.beam.Direction;
+import xyz.chromabeam.engine.render.RenderUtil;
+import xyz.chromabeam.engine.render.buffer.IndexedVertexArray;
 import xyz.chromabeam.engine.render.buffer.VertexArray;
 import xyz.chromabeam.engine.render.texture.TextureRegionI;
 import xyz.chromabeam.util.Destroyable;
 
-import static org.lwjgl.opengl.GL33C.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The basic building block of the new render engine. Renders a 128x128 square grid of components (16384) with a single
@@ -24,101 +27,140 @@ import static org.lwjgl.opengl.GL33C.*;
  */
 public class RenderChunk implements Destroyable {
 
-    public static final int VERTICES_PER_TRIANGLE = 3;
-    public static final int TRIANGLES_PER_QUAD = 2;
-    public static final int FLOATS_PER_VERTEX = 4;
-    public static final int VERTICES_PER_QUAD = TRIANGLES_PER_QUAD * VERTICES_PER_TRIANGLE;
+    public static final int FLOATS_PER_VERTEX = RenderUtil.POSITION_FLOATS + RenderUtil.UV_FLOATS + RenderUtil.COLOR_FLOATS;
+    public static final int VERTICES_PER_QUAD = 4;
+    public static final int INDICES_PER_QUAD = 6;
 
     public static final int FLOATS_PER_QUAD = FLOATS_PER_VERTEX * VERTICES_PER_QUAD;
-    private static final long BYTES_PER_QUAD = FLOATS_PER_QUAD * 4;
 
     public static final int CHUNK_SIDE_LENGTH = 128;
 
-    private static final long P_ZERO_BUF = MemoryUtil.nmemCalloc(BYTES_PER_QUAD, 1);
-
+    private static final int COLOR_OFFSET = RenderUtil.POSITION_FLOATS + RenderUtil.UV_FLOATS;
 
     public int x = 0;
     public int y = 0;
 
-    private final VertexArray vertexArray;
+    private int layerCount = 0;
 
-    private final float[] BUF = new float[FLOATS_PER_QUAD];
-    public void set(int x, int y, Direction rotation, boolean flipped, TextureRegionI texture) {
+    private final List<IndexedVertexArray> layers = new ArrayList<>();
+
+    private final ChunkRenderer parent;
+
+    private final int edgeLength;
+
+    public void set(int x, int y, Direction rotation, boolean flipped, int layer, TextureRegionI texture, Vector4f color) {
         if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
             throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
-        } else if (texture == null) {
-            MemoryUtil.memCopy(P_ZERO_BUF, vertexArray.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
         } else {
-            float u0 = texture.u0();
-            float v0 = flipped ? texture.v1() : texture.v0();
-            float u1 = texture.u1();
-            float v1 = flipped ? texture.v0() : texture.v1();
-            BUF[ 0] = x    ; BUF[ 1] = y    ;
-            BUF[ 4] = x    ; BUF[ 5] = y + 1;
-            BUF[ 8] = x + 1; BUF[ 9] = y + 1;
-            BUF[12] = x    ; BUF[13] = y    ;
-            BUF[16] = x + 1; BUF[17] = y + 1;
-            BUF[20] = x + 1; BUF[21] = y    ;
-            switch(rotation) {
-                case RIGHT -> {
-                    BUF[ 2] = u0   ; BUF[ 3] = v0   ;
-                    BUF[14] = u0   ; BUF[15] = v0   ;
-                    BUF[ 6] = u0   ; BUF[ 7] = v1   ;
-                    BUF[22] = u1   ; BUF[23] = v0   ;
-                    BUF[10] = u1   ; BUF[11] = v1   ;
-                    BUF[18] = u1   ; BUF[19] = v1   ;
+            while (layer >= layerCount) createLayer();
+            var buf = layers.get(layer).getVertexBuffer();
+            buf.position((y * edgeLength + x) * FLOATS_PER_QUAD);
+            var otherRotation = rotation == Direction.LEFT || rotation == Direction.UP;
+            var horizontal = rotation == Direction.RIGHT || rotation == Direction.LEFT;
+            if (texture == null) {
+                for (int i = 0; i < FLOATS_PER_QUAD; i++) {
+                    buf.put(0);
                 }
-                case DOWN -> {
-                    BUF[ 2] = u0   ; BUF[ 3] = v1   ;
-                    BUF[14] = u0   ; BUF[15] = v1   ;
-                    BUF[ 6] = u1   ; BUF[ 7] = v1   ;
-                    BUF[22] = u0   ; BUF[23] = v0   ;
-                    BUF[10] = u1   ; BUF[11] = v0   ;
-                    BUF[18] = u1   ; BUF[19] = v0   ;
+            } else {
+                float u0; float v0; float u1; float v1; float vA; float vB; float uA; float uB;
+                if (otherRotation) {
+                    u0 = texture.u1(); u1 = texture.u0();
+                } else {
+                    u0 = texture.u0(); u1 = texture.u1();
                 }
-                case LEFT -> {
-                    BUF[ 2] = u1   ; BUF[ 3] = v1   ;
-                    BUF[14] = u1   ; BUF[15] = v1   ;
-                    BUF[ 6] = u1   ; BUF[ 7] = v0   ;
-                    BUF[22] = u0   ; BUF[23] = v1   ;
-                    BUF[10] = u0   ; BUF[11] = v0   ;
-                    BUF[18] = u0   ; BUF[19] = v0   ;
+                if (flipped ^ otherRotation) {
+                    v0 = texture.v1(); v1 = texture.v0();
+                } else {
+                    v0 = texture.v0(); v1 = texture.v1();
                 }
-                case UP -> {
-                    BUF[ 2] = u1   ; BUF[ 3] = v0   ;
-                    BUF[14] = u1   ; BUF[15] = v0   ;
-                    BUF[ 6] = u0   ; BUF[ 7] = v0   ;
-                    BUF[22] = u1   ; BUF[23] = v1   ;
-                    BUF[10] = u0   ; BUF[11] = v1   ;
-                    BUF[18] = u0   ; BUF[19] = v1   ;
+                if (horizontal) {
+                    vA = v0; vB = v1; uA = u0; uB = u1;
+                } else {
+                    vA = v1; vB = v0; uA = u1; uB = u0;
                 }
+                buf
+                        .put(x)    .put(y)    .put(u0).put(vA).put(color.x).put(color.y).put(color.z).put(color.w)
+                        .put(x)    .put(y + 1).put(uA).put(v1).put(color.x).put(color.y).put(color.z).put(color.w)
+                        .put(x + 1).put(y + 1).put(u1).put(vB).put(color.x).put(color.y).put(color.z).put(color.w)
+                        .put(x + 1).put(y)    .put(uB).put(v0).put(color.x).put(color.y).put(color.z).put(color.w);
             }
         }
-        vertexArray.getWriteBuffer().put((y * edgeLength + x) * FLOATS_PER_QUAD, BUF);
+    }
+
+    public void setColor(int x, int y, int layer, Vector4f color) {
+        if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0 || layer >= layerCount) {
+            throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y + ", layer " + layer);
+        } else {
+            var buf = layers.get(layer).getVertexBuffer();
+            int base = (y * edgeLength + x) * FLOATS_PER_QUAD;
+            buf
+                    .position(base + COLOR_OFFSET).put(color.x).put(color.y).put(color.z).put(color.w)
+                    .position(base + FLOATS_PER_VERTEX + COLOR_OFFSET).put(color.x).put(color.y).put(color.z).put(color.w)
+                    .position(base + 2 * FLOATS_PER_VERTEX + COLOR_OFFSET).put(color.x).put(color.y).put(color.z).put(color.w)
+                    .position(base + 3 * FLOATS_PER_VERTEX + COLOR_OFFSET).put(color.x).put(color.y).put(color.z).put(color.w);
+        }
     }
 
     public void unset(int x, int y) {
         if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
             throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
         }
-        MemoryUtil.memCopy(P_ZERO_BUF, vertexArray.getWriteBufferPointer() + (y * (long)edgeLength + x) * BYTES_PER_QUAD, BYTES_PER_QUAD);
+        int pos = (y * edgeLength + x) * FLOATS_PER_QUAD;
+        for (var layer: layers) {
+            var buf = layer.getVertexBuffer();
+            buf.position(pos);
+            for (int i = 0; i < FLOATS_PER_QUAD; i++) {
+                buf.put(0);
+            }
+        }
     }
 
-    private final ChunkRenderer parent;
+    public void unset(int x, int y, int layer) {
+        if (x >= edgeLength || x < 0 || y >= edgeLength || y < 0) {
+            throw new IllegalArgumentException("Chunk position out of bounds: " + x + ", " + y);
+        }
+        if (layer >= layerCount) return;
+        var buf = layers.get(layer).getVertexBuffer();
+        buf.position((y * edgeLength + x) * FLOATS_PER_QUAD);
+        for (int i = 0; i < FLOATS_PER_QUAD; i++) {
+            buf.put(0);
+        }
+    }
 
-    private final int edgeLength;
-    private final int vertices;
+    private void createLayer() {
+        var vertexArray = new IndexedVertexArray(VertexArray.DrawMethod.TRIANGLES,
+                edgeLength * edgeLength * VERTICES_PER_QUAD,
+                edgeLength * edgeLength * INDICES_PER_QUAD,
+                RenderUtil.POSITION_FLOATS, RenderUtil.UV_FLOATS, RenderUtil.COLOR_FLOATS);
+        var indexBuf = vertexArray.getElementArrayBuffer();
+        indexBuf.clear();
+        for (int i = 0; i < edgeLength * edgeLength; i++) {
+            indexBuf.put(i * 4);
+            indexBuf.put(i * 4 + 1);
+            indexBuf.put(i * 4 + 2);
+            indexBuf.put(i * 4);
+            indexBuf.put(i * 4 + 2);
+            indexBuf.put(i * 4 + 3);
+        }
+        indexBuf.flip();
+        vertexArray.sync();
+        vertexArray.unbind();
+        layers.add(vertexArray);
+        layerCount++;
+    }
+
     RenderChunk(ChunkRenderer parent, int edgeLength) {
         this.parent = parent;
         this.edgeLength = edgeLength;
-        vertices = edgeLength * edgeLength * VERTICES_PER_QUAD;
-        vertexArray = new VertexArray(vertices, 2, 2);
     }
 
     void draw() {
-        vertexArray.bind();
-        glDrawArrays(GL_TRIANGLES, 0, vertices);
-        vertexArray.unbind();
+        for (var layer: layers) {
+            layer.bind();
+            layer.sync();
+            layer.draw();
+            layer.unbind();
+        }
     }
 
     @Override
@@ -135,6 +177,9 @@ public class RenderChunk implements Destroyable {
     }
 
     void destroyInternal() {
-        vertexArray.destroy();
+        for (var layer: layers) {
+            layer.destroy();
+        }
+        layers.clear();
     }
 }

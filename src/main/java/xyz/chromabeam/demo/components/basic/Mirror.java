@@ -7,9 +7,9 @@ import xyz.chromabeam.engine.render.texture.TextureAtlas;
 import xyz.chromabeam.world.BeamEmitter;
 
 public class Mirror extends Component implements BeamInstantManipulator {
-    @Override
-    public void initialize(TextureAtlas atlas) {
-        initialize("Mirror", atlas, "mirror");
+
+    public Mirror() {
+        super("Mirror", "mirror", 0);
     }
 
     @Override

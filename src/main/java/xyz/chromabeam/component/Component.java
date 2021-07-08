@@ -1,5 +1,7 @@
 package xyz.chromabeam.component;
 
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import xyz.chromabeam.engine.render.texture.TextureAtlas;
 import xyz.chromabeam.engine.render.texture.TextureRegionI;
 
@@ -21,17 +23,28 @@ public abstract class Component implements ComponentI{
 
     private final int typeBitMask;
     private TextureRegionI[] textures;
+    private TextureRegionI[][] colorMasks;
     private int activeTexture = 0;
     private int targetTexture = 0;
-    private String name;
+    private final String name;
+    private final String id;
+    private int colorMaskCount;
 
-    public Component() {
+    //Added for fixing a potential bug with the copy() method.
+    private Component() {
+        throw new UnsupportedOperationException("Cannot instantiate a raw component!");
+    }
+
+    public Component(String name, String id, int colorMaskCount) {
         typeBitMask =
                 ((this instanceof Tickable)                 ? MASK_TICKABLE             : 0) |
                 ((this instanceof BeamConsumer)             ? MASK_CONSUMER             : 0) |
                 ((this instanceof BeamProducer)             ? MASK_PRODUCER             : 0) |
                 ((this instanceof BeamInstantManipulator)   ? MASK_INSTANT : 0) |
                 ((this instanceof UserInteractive)          ? MASK_INTERACTIVE : 0);
+        this.name = name;
+        this.id = id;
+        this.colorMaskCount = colorMaskCount;
     }
 
 
@@ -55,12 +68,13 @@ public abstract class Component implements ComponentI{
         return (typeBitMask & MASK_INTERACTIVE) == MASK_INTERACTIVE;
     }
 
-    protected final void initialize(String name, TextureAtlas atlas, String id) {
-        this.name = name;
+    public void initialize(TextureAtlas atlas) {
         textures = atlas.get(id);
+        colorMasks = new TextureRegionI[colorMaskCount][];
+        for (int i = 0; i < colorMaskCount; i++) {
+            colorMasks[i] = atlas.get(id + "$colormask_" + i);
+        }
     }
-
-    public abstract void initialize(TextureAtlas atlas);
 
     protected void setActiveTexture(int frame) {
         targetTexture = frame;
@@ -71,11 +85,11 @@ public abstract class Component implements ComponentI{
      */
     public void copy(Component other) {
         if (!(other.getClass().equals(this.getClass()))) throw new IllegalArgumentException("Cannot copy component data into component with different type!");
-
-        other.name = name;
         other.textures = textures;
         other.activeTexture = activeTexture;
         other.targetTexture = targetTexture;
+        other.colorMaskCount = colorMaskCount;
+        other.colorMasks = colorMasks;
     }
 
     /**
@@ -105,7 +119,27 @@ public abstract class Component implements ComponentI{
     }
 
     @Override
+    public TextureRegionI getColorMaskTexture(int mask) {
+        return colorMasks[mask][activeTexture];
+    }
+
+    @Override
+    public Vector4f getColorMaskColor(int mask, Vector4f buffer) {
+        return buffer.set(0);
+    }
+
+    @Override
+    public int getColorMaskCount() {
+        return colorMaskCount;
+    }
+
+    @Override
     public final String getName() {
         return name;
+    }
+
+    @Override
+    public String getID() {
+        return id;
     }
 }

@@ -9,13 +9,14 @@ import xyz.chromabeam.engine.render.world.Renderer;
 import xyz.chromabeam.engine.render.world.WorldRenderer;
 import xyz.chromabeam.engine.window.WindowResizeCallback;
 import xyz.chromabeam.util.Destroyable;
-import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL33C;
 
 import java.io.IOException;
 
+import static org.lwjgl.opengl.GL11C.GL_TRIANGLE_FAN;
+
 public class DeferredRenderer extends Renderer implements Destroyable, WindowResizeCallback {
-    private final VertexArray buffer;
+    private final VertexArray screenQuad;
     private final Shader shader;
     private final FrameBuffer backBuffer;
     private final FrameBuffer tempBuffer;
@@ -31,13 +32,15 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
             throw new RuntimeException(e);
         }
         horizontalBlurUniform = shader.getUniforms()[0];
-        buffer = new VertexArray(4, 2, 2);
-        buffer.getWriteBuffer().put(0, new float[]{
+        screenQuad = new VertexArray(VertexArray.DrawMethod.TRIANGLE_FAN, 4, 2, 2);
+        screenQuad.getVertexBuffer().put(0, new float[]{
                 -1, 1 , 0, 1,
                 -1, -1, 0, 0,
                 1 , -1, 1, 0,
                 1 , 1 , 1, 1
         });
+        screenQuad.sync();
+        screenQuad.unbind();
         backBuffer = new FrameBuffer(width, height);
         tempBuffer = new FrameBuffer(width, height);
     }
@@ -58,27 +61,27 @@ public class DeferredRenderer extends Renderer implements Destroyable, WindowRes
         backBuffer.unbind();
 
         shader.bind();
-        buffer.bind();
+        screenQuad.bind();
         backBuffer.getTexture().bind();
         tempBuffer.bind();
         Renderer.clear(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
         GL33C.glUniform1i(horizontalBlurUniform, 1);
-        GL33C.glDrawArrays(GL11C.GL_TRIANGLE_FAN, 0, 4);
+        screenQuad.draw();
         tempBuffer.unbind();
         backBuffer.getTexture().unbind();
 
         tempBuffer.getTexture().bind();
         GL33C.glUniform1i(horizontalBlurUniform, 0);
-        GL33C.glDrawArrays(GL11C.GL_TRIANGLE_FAN, 0, 4);
+        screenQuad.draw();
         tempBuffer.getTexture().unbind();
-        buffer.unbind();
+        screenQuad.unbind();
         shader.unbind();
     }
 
     @Override
     public void destroy() {
         shader.destroy();
-        buffer.destroy();
+        screenQuad.destroy();
         backBuffer.destroy();
         tempBuffer.destroy();
     }

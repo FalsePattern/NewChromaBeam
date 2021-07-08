@@ -46,6 +46,7 @@ public class BeamTest {
 
         boolean match = false;
         BeamConsumer(Vector3f desiredColor) {
+            super("Consumer", "consumer", 0);
             this.desiredColor = new Vector3f(desiredColor);
         }
 
@@ -59,11 +60,6 @@ public class BeamTest {
         }
 
         @Override
-        public void initialize(TextureAtlas atlas) {
-            super.initialize("Consumer", atlas, "consumer");
-        }
-
-        @Override
         public void tick() {
 
         }
@@ -74,6 +70,7 @@ public class BeamTest {
         private final Vector3f outCol;
 
         BeamProducer(Vector3f outputColor) {
+            super("Producer", "producer", 0);
             this.outCol = new Vector3f(outputColor);
         }
 
@@ -85,29 +82,6 @@ public class BeamTest {
         @Override
         public boolean wantEmit() {
             return true;
-        }
-
-        @Override
-        public void initialize(TextureAtlas atlas) {
-            super.initialize("Producer", atlas, "producer");
-        }
-
-        @Override
-        public void tick() {
-
-        }
-    }
-
-    private static class NullConsumer extends Component implements xyz.chromabeam.component.BeamConsumer {
-        @Override
-        public void incomingBeam(Direction direction, float red, float green, float blue) {
-            if (red != 0 || green != 0 || blue != 0)
-            throw new IllegalStateException(String.format("Beam received by null consumer component: %f, %f, %f", red, green, blue));
-        }
-
-        @Override
-        public void initialize(TextureAtlas atlas) {
-            super.initialize("Null", atlas, "null");
         }
 
         @Override

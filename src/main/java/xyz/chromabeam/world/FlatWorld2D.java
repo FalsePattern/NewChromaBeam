@@ -193,6 +193,8 @@ public class FlatWorld2D implements World2D, BeamResolver {
         if (tickable.component.isGraphicsChanged()) {
             tickable.component.updateGraphics();
             worldRenderer.set((ComponentTransform) tickable);
+        } else {
+            worldRenderer.updateMaskColors((ComponentTransform) tickable);
         }
         if (tickable.component instanceof BeamProducer p && p.wantEmit()) {
             producers.add((ComponentTransform)tickable);

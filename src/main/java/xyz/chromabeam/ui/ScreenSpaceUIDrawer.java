@@ -11,6 +11,8 @@ import xyz.chromabeam.engine.window.WindowResizeCallback;
 import xyz.chromabeam.ui.font.Font;
 import xyz.chromabeam.util.Destroyable;
 
+import static org.lwjgl.opengl.GL11C.GL_TRIANGLES;
+
 public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowResizeCallback, Destroyable {
     private static final int VERTEX_DIMENSIONS = 2;
     private static final int VERTEX_COLORS = 4;
@@ -49,8 +51,10 @@ public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowRes
         this.verticalMultiplier = -2f / height;
         this.flatShader = flatShader;
         this.fontShader = fontShader;
-        uiBuffer = new VertexArray(BUFFER_SIZE, VERTEX_DIMENSIONS, VERTEX_COLORS);
-        textBuffer = new VertexArray(BUFFER_SIZE, VERTEX_DIMENSIONS, VERTEX_UV);
+        uiBuffer = new VertexArray(VertexArray.DrawMethod.TRIANGLES, BUFFER_SIZE, VERTEX_DIMENSIONS, VERTEX_COLORS);
+        uiBuffer.unbind();
+        textBuffer = new VertexArray(VertexArray.DrawMethod.TRIANGLES, BUFFER_SIZE, VERTEX_DIMENSIONS, VERTEX_UV);
+        textBuffer.unbind();
         b = new float[Math.max(uiBuffer.floatsPerVertex, textBuffer.floatsPerVertex) * QUAD_VERTICES];
     }
 
@@ -65,7 +69,7 @@ public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowRes
                 flatShader.bind();
                 uiBuffer.bind();
             }
-            GL33C.glDrawArrays(GL11C.GL_TRIANGLES, 0, queuedVertices);
+            GL33C.glDrawArrays(GL_TRIANGLES, 0, queuedVertices);
             queuedVertices = 0;
             if (fontMode) {
                 activeFont.texture.unbind();
@@ -96,7 +100,7 @@ public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowRes
         b[24] = dim.x;         b[25] = dim.y + dim.w; b[26] = red; b[27] = green; b[28] = blue; b[29] = alpha;
         b[30] = dim.x + dim.z; b[31] = dim.y + dim.w; b[32] = red; b[33] = green; b[34] = blue; b[35] = alpha;
 
-        uiBuffer.getWriteBuffer().put(queuedVertices * uiBuffer.floatsPerVertex, b, 0, uiBuffer.floatsPerVertex * QUAD_VERTICES);
+        uiBuffer.getVertexBuffer().put(queuedVertices * uiBuffer.floatsPerVertex, b, 0, uiBuffer.floatsPerVertex * QUAD_VERTICES);
         queuedVertices += QUAD_VERTICES;
     }
 
@@ -153,7 +157,7 @@ public class ScreenSpaceUIDrawer extends Renderer implements UIDrawer, WindowRes
             b[12] = XX + W; b[13] = YY;     b[14] = region.u1(); b[15] = region.v0();
             b[16] = XX;     b[17] = YY + H; b[18] = region.u0(); b[19] = region.v1();
             b[20] = XX + W; b[21] = YY + H; b[22] = region.u1(); b[23] = region.v1();
-            textBuffer.getWriteBuffer().put(queuedVertices * textBuffer.floatsPerVertex, b, 0, textBuffer.floatsPerVertex * QUAD_VERTICES);
+            textBuffer.getVertexBuffer().put(queuedVertices * textBuffer.floatsPerVertex, b, 0, textBuffer.floatsPerVertex * QUAD_VERTICES);
             queuedVertices += QUAD_VERTICES;
             X += glyph.xAdvance() * horizontalMultiplier;
         }

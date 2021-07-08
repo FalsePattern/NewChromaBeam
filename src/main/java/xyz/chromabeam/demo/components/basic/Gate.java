@@ -1,6 +1,7 @@
 package xyz.chromabeam.demo.components.basic;
 
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import xyz.chromabeam.beam.Direction;
 import xyz.chromabeam.component.*;
 import xyz.chromabeam.engine.render.texture.TextureAtlas;
@@ -13,9 +14,14 @@ public class Gate extends Component implements BeamConsumer, BeamProducer, UserI
     private boolean inverted = false;
     private boolean changed = false;
     private boolean emit = false;
+
+    public Gate() {
+        super("Gate", "gate", 2);
+    }
+
     @Override
     public void initialize(TextureAtlas atlas) {
-        initialize("Gate", atlas, "gate");
+        super.initialize(atlas);
         setActiveTexture(4);
     }
 
@@ -46,7 +52,7 @@ public class Gate extends Component implements BeamConsumer, BeamProducer, UserI
 
     @Override
     public void tick() {
-        setActiveTexture((inverted ? 4 : 0) + (sw ? 2 : 0) + (input.equals(0, 0, 0) ? 0 : 1));
+        setActiveTexture((inverted ? 2 : 0) + (sw ? 1 : 0));
         if (sw != inverted) {
             output.set(input);
         } else {
@@ -54,6 +60,11 @@ public class Gate extends Component implements BeamConsumer, BeamProducer, UserI
         }
         emit = changed;
         changed = false;
+    }
+
+    @Override
+    public Vector4f getColorMaskColor(int mask, Vector4f buffer) {
+        return mask == 0 ? buffer.set(input, 1) : sw ? buffer.set(1) : buffer.set(0, 0, 0, 1);
     }
 
     @Override

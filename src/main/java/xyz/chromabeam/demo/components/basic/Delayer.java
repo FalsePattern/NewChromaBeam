@@ -1,6 +1,7 @@
 package xyz.chromabeam.demo.components.basic;
 
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import xyz.chromabeam.beam.Direction;
 import xyz.chromabeam.component.BeamConsumer;
 import xyz.chromabeam.component.BeamProducer;
@@ -13,9 +14,8 @@ public class Delayer extends Component implements BeamConsumer, BeamProducer, Ti
     private final Vector3f value = new Vector3f();
     private boolean updated = false;
 
-    @Override
-    public void initialize(TextureAtlas atlas) {
-        initialize("Delayer", atlas, "delayer");
+    public Delayer() {
+        super("Delayer", "delayer", 1);
     }
 
     @Override
@@ -34,6 +34,11 @@ public class Delayer extends Component implements BeamConsumer, BeamProducer, Ti
         if (direction == Direction.RIGHT) {
             value.set(red, green, blue);
         }
+    }
+
+    @Override
+    public Vector4f getColorMaskColor(int mask, Vector4f buffer) {
+        return buffer.set(value, 1);
     }
 
     @Override

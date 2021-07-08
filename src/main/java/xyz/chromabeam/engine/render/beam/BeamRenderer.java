@@ -4,7 +4,6 @@ import xyz.chromabeam.beam.Direction;
 import xyz.chromabeam.engine.beam.Beam;
 import xyz.chromabeam.engine.render.world.WorldRenderer;
 import xyz.chromabeam.engine.render.buffer.VertexArray;
-import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.system.MemoryUtil;
 import xyz.chromabeam.util.Cache;
@@ -12,6 +11,7 @@ import xyz.chromabeam.util.storage.Container2D;
 import xyz.chromabeam.util.storage.NativeContainer2D;
 
 import java.nio.FloatBuffer;
+
 
 public class BeamRenderer extends WorldRenderer implements BeamDrawer{
     private static final int VERTICES_PER_BEAM = 2;
@@ -34,8 +34,9 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
     public BeamRenderer(int beamsPerDrawCall) {
         super("beam", "color4");
         this.capacity = this.beamsPerDraw = beamsPerDrawCall;
-        vb = new VertexArray(beamsPerDrawCall * VERTICES_PER_BEAM, 2, 3);
-        growableBuffer = MemoryUtil.memAllocFloat(beamsPerDrawCall * FLOATS_PER_BEAM);
+        vb = new VertexArray(VertexArray.DrawMethod.LINES, beamsPerDrawCall * VERTICES_PER_BEAM, 2, 3);
+        growableBuffer = MemoryUtil.memCallocFloat(beamsPerDrawCall * FLOATS_PER_BEAM);
+        vb.unbind();
     }
 
     @Override
@@ -126,10 +127,23 @@ public class BeamRenderer extends WorldRenderer implements BeamDrawer{
         int beamsDrawn = 0;
         vb.bind();
         while (beams > 0) {
+            var buf = vb.getVertexBuffer();
             int inCurrentDraw = Math.min(beams, beamsPerDraw);
-            vb.getWriteBuffer().put(0, growableBuffer, beamsDrawn * FLOATS_PER_BEAM, Math.min(beams, beamsPerDraw) * FLOATS_PER_BEAM);
+            buf.clear();
+            buf.put(0, growableBuffer, beamsDrawn * FLOATS_PER_BEAM, inCurrentDraw * FLOATS_PER_BEAM);
+            if (inCurrentDraw < beamsPerDraw) {
+                int c = inCurrentDraw;
+                buf.position(c * FLOATS_PER_BEAM);
+                while (c < beamsPerDraw) {
+                    for (int i = 0; i < FLOATS_PER_BEAM; i++) {
+                        buf.put(0);
+                    }
+                    c++;
+                }
+                buf.flip();
+            }
             vb.sync();
-            GL33C.glDrawArrays(GL11C.GL_LINES, 0, inCurrentDraw * VERTICES_PER_BEAM);
+            vb.draw();
             beams -= inCurrentDraw;
             beamsDrawn += inCurrentDraw;
         }

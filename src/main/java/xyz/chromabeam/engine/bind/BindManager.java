@@ -5,7 +5,6 @@ import xyz.chromabeam.Global;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.opengl.GL33C.*;
@@ -176,14 +175,21 @@ public class BindManager {
     }
 
     public static int DEBUG_boundBuffer(int target) {
-        if (Global.DEBUG) {
-            return switch (target) {
-                case GL_ELEMENT_ARRAY_BUFFER -> vaoToEboMap.get(vaoManager.bound());
-                case GL_ARRAY_BUFFER -> vboManager.bound();
-                default -> throw new IllegalArgumentException("Could not retrieve bound buffer: Unknown buffer type: " + target);
-            };
+        if (!Global.DEBUG) {
+            throw new IllegalStateException("Tried to call debug function from non-debug build!");
         }
-        throw new IllegalStateException("Tried to call debug function from non-debug build!");
+        return switch (target) {
+            case GL_ELEMENT_ARRAY_BUFFER -> vaoToEboMap.get(vaoManager.bound());
+            case GL_ARRAY_BUFFER -> vboManager.bound();
+            default -> throw new IllegalArgumentException("Could not retrieve bound buffer: Unknown buffer type: " + target);
+        };
+    }
+
+    public static int DEBUG_boundVAO() {
+        if (!Global.DEBUG) {
+            throw new IllegalStateException("Tried to call debug function from non-debug build!");
+        }
+        return vaoManager.bound();
     }
 
     public static void DEBUG_verifyAllDeleted() {

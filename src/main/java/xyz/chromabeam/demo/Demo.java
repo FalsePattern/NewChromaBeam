@@ -28,6 +28,7 @@ import xyz.chromabeam.world.WorldRenderer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.Color;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,15 +93,15 @@ public class Demo {
             double average = 0;
             var r = new Random(1);
 
-            for (int y = -256; y < 255; y++) {
-                for (int x = -256; x < 255; x++) {
-                    if (r.nextInt(2) == 0) {
-                        var c = components[1].newInstance();
-                        components[1].copy(c);
-                        world.set(x, y, Direction.values()[r.nextInt(4)], r.nextBoolean(), c);
-                    }
-                }
-            }
+            //for (int y = -256; y < 255; y++) {
+            //    for (int x = -256; x < 255; x++) {
+            //        if (r.nextInt(2) == 0) {
+            //            var c = components[1].newInstance();
+            //            components[1].copy(c);
+            //            world.set(x, y, Direction.values()[r.nextInt(4)], r.nextBoolean(), c);
+            //        }
+            //    }
+            //}
             while (!closed.get()) {
                 Window.pollEvents();
                 var start = System.nanoTime();
@@ -128,13 +129,20 @@ public class Demo {
     }
 
     private static final String textureRoot = "/xyz/chromabeam/textures/demo/";
-    private static final String[] textures = new String[]{"block", "emitter", "gate", "mirror", "delayer", "splitter"};
+    private static final String[] textures = new String[]{"block", "delayer", "emitter", "gate", "mirror", "splitter"};
     private static ArrayList<TextureTile> getTextures() {
         return new ArrayList<>(Arrays
                 .stream(textures)
                 .<TextureTile>mapMulti((texture, consumer) -> {
                     try {
-                        TextureTile.splitIntoTiles(ResourceUtil.readImageFromResource(textureRoot + texture + ".png"), 32, 32, texture).forEach(consumer);
+                        TextureTile.splitIntoTiles(ResourceUtil.readImageFromResource(textureRoot + texture + "/base.png"), 32, 32, texture).forEach(consumer);
+                        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+                            try {
+                                TextureTile.splitIntoTiles(ResourceUtil.readImageFromResource(textureRoot + texture + "/colormask_" + i + ".png"), 32, 32, texture + "$colormask_" + i).forEach(consumer);
+                            } catch (FileNotFoundException ignored) {
+                                break;
+                            }
+                        }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }

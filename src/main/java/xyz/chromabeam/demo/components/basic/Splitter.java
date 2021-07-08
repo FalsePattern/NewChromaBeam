@@ -19,9 +19,9 @@ public class Splitter extends Component implements BeamInstantManipulator, Ticka
     }
 
     private final Vector3f tmp = new Vector3f();
-    @Override
-    public void initialize(TextureAtlas atlas) {
-        initialize("Splitter", atlas, "splitter");
+
+    public Splitter() {
+        super("Splitter", "splitter", 0);
     }
 
     @Override
