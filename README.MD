@@ -1,6 +1,8 @@
 # ChromaBeam Rewrite
 
-Progress blog: https://falsepattern.moe/chromabeam/blog.html
+## This project is no longer in active development!
+
+(inactive) Progress blog: https://falsepattern.com/chromabeam
 
 Warning! You have to play the demo by starting it with a terminal, because input feedback
 is text-based with not GUI response!.
